@@ -4711,15 +4711,15 @@
 <h2 id="1-automatic-differentiation-via-dual-numbers">1. 쌍대 수를 통한 자동 미분 (Automatic Differentiation via Dual Numbers)</h2>
 <p>전통적인 유한 차분법(finite difference methods)은 치명적인 자릿수 떨어짐(catastrophic cancellation)과 부동소수점 잘림 오차(floating-point truncation errors)로 인해 어려움을 겪습니다. 한 번의 평가(evaluation) 패스로 정확한 자코비안 <span class="arithmatex">\(J = \frac{\partial f}{\partial x}\)</span>를 계산하기 위해, 우리는 <strong>쌍대 수(Dual Numbers)</strong> 를 사용합니다.</p>
 <h3 id="11-dual-number-algebra">1.1 쌍대 수 대수 (Dual Number Algebra)</h3>
-<p>쌍대 수 <span class="arithmatex">\(z\)</span>는 <span class="arithmatex">\(z = v + g \epsilon\)</span>으로 정의되며, 여기서 <span class="arithmatex">\(v\)</span>는 실수(원시/primal) 부분, <span class="arithmatex">\(g\)</span>는 쌍대(기울기/gradient) 부분, <span class="arithmatex">\(\epsilon\)</span>은 다음을 만족하는 무한소(infinitesimal) 단위입니다:
-$$ \epsilon \neq 0, \quad \epsilon^2 = 0 $$</p>
-<p>매끄러운 함수(smooth function) <span class="arithmatex">\(f(x)\)</span>에 테일러 전개(Taylor expansion)를 수행하면:
-$$ f(v + g \epsilon) = f(v) + f'(v)(g \epsilon) + \frac{f''(v)}{2}(g \epsilon)^2 + \dots $$
-<span class="arithmatex">\(\epsilon^2 = 0\)</span>이므로 모든 고차항(higher-order terms)은 즉시 사라져 정확한 해석적 도함수(analytical derivatives)가 생성됩니다:
-$$ f(v + g \epsilon) = f(v) + f'(v) g \epsilon $$</p>
+<p>쌍대 수 <span class="arithmatex">\(z\)</span>는 <span class="arithmatex">\(z = v + g \epsilon\)</span>으로 정의되며, 여기서 <span class="arithmatex">\(v\)</span>는 실수(원시/primal) 부분, <span class="arithmatex">\(g\)</span>는 쌍대(기울기/gradient) 부분, <span class="arithmatex">\(\epsilon\)</span>은 다음을 만족하는 무한소(infinitesimal) 단위입니다:</p>
+<div class="arithmatex">\[ \epsilon \neq 0, \quad \epsilon^2 = 0 \]</div>
+<p>매끄러운 함수(smooth function) <span class="arithmatex">\(f(x)\)</span>에 테일러 전개(Taylor expansion)를 수행하면:</p>
+<div class="arithmatex">\[ f(v + g \epsilon) = f(v) + f'(v)(g \epsilon) + \frac{f''(v)}{2}(g \epsilon)^2 + \dots \]</div>
+<p><span class="arithmatex">\(\epsilon^2 = 0\)</span>이므로 모든 고차항(higher-order terms)은 즉시 사라져 정확한 해석적 도함수(analytical derivatives)가 생성됩니다:</p>
+<div class="arithmatex">\[ f(v + g \epsilon) = f(v) + f'(v) g \epsilon \]</div>
 <h3 id="12-dualvec-multidimensional-propagation">1.2 다차원 전파 (<code>DualVec</code>) (Multidimensional Propagation)</h3>
-<p><code>DualVec&lt;T, N&gt;</code>에서 기울기 <span class="arithmatex">\(g\)</span>는 벡터 <span class="arithmatex">\(\mathbf{g} \in \mathbb{R}^N\)</span>로 확장됩니다. 다변수 함수 <span class="arithmatex">\(f: \mathbb{R} \to \mathbb{R}\)</span>를 적용하면:
-$$ f(v + \mathbf{g} \epsilon) = f(v) + \nabla f(v) \cdot \mathbf{g} \epsilon $$</p>
+<p><code>DualVec&lt;T, N&gt;</code>에서 기울기 <span class="arithmatex">\(g\)</span>는 벡터 <span class="arithmatex">\(\mathbf{g} \in \mathbb{R}^N\)</span>로 확장됩니다. 다변수 함수 <span class="arithmatex">\(f: \mathbb{R} \to \mathbb{R}\)</span>를 적용하면:</p>
+<div class="arithmatex">\[ f(v + \mathbf{g} \epsilon) = f(v) + \nabla f(v) \cdot \mathbf{g} \epsilon \]</div>
 <p>기본 연산에 대해 대수적 규칙은 SIMD 벡터화 실행에 직접 매핑됩니다:</p>
 <ul>
 <li><strong>덧셈 (Addition)</strong>: <span class="arithmatex">\((v_1 + \mathbf{g}_1 \epsilon) + (v_2 + \mathbf{g}_2 \epsilon) = (v_1 + v_2) + (\mathbf{g}_1 + \mathbf{g}_2) \epsilon\)</span></li>
@@ -4730,31 +4730,31 @@ $$ f(v + \mathbf{g} \epsilon) = f(v) + \nabla f(v) \cdot \mathbf{g} \epsilon $$<
 <h2 id="2-linear-algebra-factorizations">2. 선형 대수 인수분해 (Linear Algebra Factorizations)</h2>
 <p>힙(heap) 할당 없이 선형 연립 방정식 <span class="arithmatex">\(Ax = b\)</span>를 효율적으로 푸는 것이 <code>Linalg</code> 모듈의 주요 목표입니다.</p>
 <h3 id="21-cholesky-decomposition-a-llt">2.1 숄레스키 분해 (Cholesky Decomposition) (<span class="arithmatex">\(A = LL^T\)</span>)</h3>
-<p>대칭 양의 정부호 행렬(symmetric positive-definite matrix) <span class="arithmatex">\(A\)</span>에 대해, 숄레스키 인수분해는 하삼각 행렬(lower triangular matrix) <span class="arithmatex">\(L\)</span>을 계산합니다:
-$$ A = L L^T $$</p>
-<p><span class="arithmatex">\(L\)</span>의 원소들은 순차적으로 도출됩니다. 대각선 요소의 경우:
-$$ L_{j,j} = \sqrt{A_{j,j} - \sum_{k=0}^{j-1} L_{j,k}^2} $$</p>
-<p>비대각 요소(<span class="arithmatex">\(i &gt; j\)</span>)의 경우:
-$$ L_{i,j} = \frac{1}{L_{j,j}} \left( A_{i,j} - \sum_{k=0}^{j-1} L_{i,k} L_{j,k} \right) $$</p>
+<p>대칭 양의 정부호 행렬(symmetric positive-definite matrix) <span class="arithmatex">\(A\)</span>에 대해, 숄레스키 인수분해는 하삼각 행렬(lower triangular matrix) <span class="arithmatex">\(L\)</span>을 계산합니다:</p>
+<div class="arithmatex">\[ A = L L^T \]</div>
+<p><span class="arithmatex">\(L\)</span>의 원소들은 순차적으로 도출됩니다. 대각선 요소의 경우:</p>
+<div class="arithmatex">\[ L_{j,j} = \sqrt{A_{j,j} - \sum_{k=0}^{j-1} L_{j,k}^2} \]</div>
+<p>비대각 요소(<span class="arithmatex">\(i &gt; j\)</span>)의 경우:</p>
+<div class="arithmatex">\[ L_{i,j} = \frac{1}{L_{j,j}} \left( A_{i,j} - \sum_{k=0}^{j-1} L_{i,k} L_{j,k} \right) \]</div>
 <div class="admonition tip">
 <p class="admonition-title">SIMD 하드웨어 가속 (SIMD Hardware Acceleration)</p>
 <p>우리의 <code>cholesky_solver</code>에서 내적(dot product) <span class="arithmatex">\(\sum L_{i,k} L_{j,k}\)</span>는 스칼라 루프를 우회하여 AVX2 FMA (Fused Multiply-Add)와 같은 SIMD 명령어를 사용하여 블록 단위로 계산됩니다.</p>
 </div>
 <h3 id="22-ldlt-ldlt-decomposition-a-ldlt">2.2 LDLT 분해 (LDLT Decomposition) (<span class="arithmatex">\(A = LDL^T\)</span>)</h3>
-<p><span class="arithmatex">\(A\)</span>가 특이점(singularity)에 접근하거나 음의 고윳값(negative eigenvalues)을 갖는 경우 (예: 충분한 정규화가 없어 조건이 나쁜(poorly conditioned) 헤시안), 숄레스키는 음수의 제곱근 때문에 실패합니다. LDLT 인수분해는 제곱근을 완전히 피합니다:
-$$ A = L D L^T $$
-여기서 <span class="arithmatex">\(D\)</span>는 대각 행렬입니다. 재귀 공식은 다음과 같습니다:</p>
-<div class="arithmatex">\[ D_{j,j} = A_{j,j} - \sum_{k=0}^{j-1} L_{j,k}^2 D_{k,k} $$
-$$ L_{i,j} = \frac{1}{D_{j,j}} \left( A_{i,j} - \sum_{k=0}^{j-1} L_{i,k} L_{j,k} D_{k,k} \right) \]</div>
+<p><span class="arithmatex">\(A\)</span>가 특이점(singularity)에 접근하거나 음의 고윳값(negative eigenvalues)을 갖는 경우 (예: 충분한 정규화가 없어 조건이 나쁜(poorly conditioned) 헤시안), 숄레스키는 음수의 제곱근 때문에 실패합니다. LDLT 인수분해는 제곱근을 완전히 피합니다:</p>
+<div class="arithmatex">\[ A = L D L^T \]</div>
+<p>여기서 <span class="arithmatex">\(D\)</span>는 대각 행렬입니다. 재귀 공식은 다음과 같습니다:</p>
+<div class="arithmatex">\[ D_{j,j} = A_{j,j} - \sum_{k=0}^{j-1} L_{j,k}^2 D_{k,k} \]</div>
+<div class="arithmatex">\[ L_{i,j} = \frac{1}{D_{j,j}} \left( A_{i,j} - \sum_{k=0}^{j-1} L_{i,k} L_{j,k} D_{k,k} \right) \]</div>
 <h3 id="23-qr-qr-decomposition-householder-reflections">2.3 QR 분해 (하우스홀더 반사) (QR Decomposition / Householder Reflections)</h3>
-<p>정방 행렬이 아니거나 조건이 매우 나쁜(ill-conditioned) 시스템에 대해, QR 분해는 <span class="arithmatex">\(A\)</span>를 직교 행렬(orthogonal matrix) <span class="arithmatex">\(Q\)</span> (<span class="arithmatex">\(Q^T Q = I\)</span>)와 상삼각 행렬(upper triangular matrix) <span class="arithmatex">\(R\)</span>로 인수분해합니다:
-$$ A = Q R $$</p>
-<p>우리는 대각선 아래의 요소들을 0으로 만들기 위해 <strong>하우스홀더 반사(Householder Reflections)</strong> 를 활용합니다. 대상 열 벡터 <span class="arithmatex">\(x\)</span>에 대해 법선 벡터 <span class="arithmatex">\(v\)</span>를 갖는 반사 초평면(reflection hyperplane)을 설계합니다:
-$$ v = x + \text{sign}(x_1) |x|_2 e_1 $$
-반사 행렬은 다음과 같습니다:
-$$ H = I - 2 \frac{v v^T}{v^T v} $$</p>
-<p>이 반사를 재귀적으로 반복 적용하면 <span class="arithmatex">\(A\)</span>가 삼각화됩니다. <span class="arithmatex">\(Ax = b\)</span>의 해는 노이즈에 대해 견고해집니다:
-$$ Rx = Q^T b $$</p>
+<p>정방 행렬이 아니거나 조건이 매우 나쁜(ill-conditioned) 시스템에 대해, QR 분해는 <span class="arithmatex">\(A\)</span>를 직교 행렬(orthogonal matrix) <span class="arithmatex">\(Q\)</span> (<span class="arithmatex">\(Q^T Q = I\)</span>)와 상삼각 행렬(upper triangular matrix) <span class="arithmatex">\(R\)</span>로 인수분해합니다:</p>
+<div class="arithmatex">\[ A = Q R \]</div>
+<p>우리는 대각선 아래의 요소들을 0으로 만들기 위해 <strong>하우스홀더 반사(Householder Reflections)</strong> 를 활용합니다. 대상 열 벡터 <span class="arithmatex">\(x\)</span>에 대해 법선 벡터 <span class="arithmatex">\(v\)</span>를 갖는 반사 초평면(reflection hyperplane)을 설계합니다:</p>
+<div class="arithmatex">\[ v = x + \text{sign}(x_1) \|x\|_2 e_1 \]</div>
+<p>반사 행렬은 다음과 같습니다:</p>
+<div class="arithmatex">\[ H = I - 2 \frac{v v^T}{v^T v} \]</div>
+<p>이 반사를 재귀적으로 반복 적용하면 <span class="arithmatex">\(A\)</span>가 삼각화됩니다. <span class="arithmatex">\(Ax = b\)</span>의 해는 노이즈에 대해 견고해집니다:</p>
+<div class="arithmatex">\[ Rx = Q^T b \]</div>
 
 
 

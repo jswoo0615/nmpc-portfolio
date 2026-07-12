@@ -4880,28 +4880,28 @@ u = \begin{bmatrix} \delta \\ a_{cmd} \end{bmatrix}
 <p>Accurate modeling of lateral forces requires estimating the normal load (<span class="arithmatex">\(F_z\)</span>) on each tire.</p>
 <h3 id="21-quasi-static-load-transfer-real-time-model">2.1 Quasi-Static Load Transfer (Real-Time Model)</h3>
 <p>To minimize computational burden in the NMPC loop, the <code>RealTimeDynamicsModel</code> uses a static approximation of lateral acceleration (<span class="arithmatex">\(a_y \approx v_x \cdot r\)</span>) to calculate weight transfer without requiring independent roll and pitch integrators.</p>
-<p><strong>Static Weight Distribution:</strong>
-$$
+<p><strong>Static Weight Distribution:</strong></p>
+<div class="arithmatex">\[
 F_{z,f}^{stat} = m g \frac{l_r}{L}, \quad F_{z,r}^{stat} = m g \frac{l_f}{L}
-$$</p>
-<p><strong>Longitudinal Load Transfer:</strong>
-$$
+\]</div>
+<p><strong>Longitudinal Load Transfer:</strong></p>
+<div class="arithmatex">\[
 \Delta F_z^{long} = m a_{cmd} \frac{h_{cg}}{L}
-$$</p>
-<p><strong>Lateral Load Transfer (Front &amp; Rear):</strong>
-$$
+\]</div>
+<p><strong>Lateral Load Transfer (Front &amp; Rear):</strong></p>
+<div class="arithmatex">\[
 \Delta F_{z,lat}^{front} = m (v_x r) \frac{h_{cg}}{t_f} K_{df}
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 \Delta F_{z,lat}^{rear} = m (v_x r) \frac{h_{cg}}{t_r} (1 - K_{df})
-$$</p>
+\]</div>
 <p>Where <span class="arithmatex">\(K_{df}\)</span> is the front roll stiffness distribution ratio, and <span class="arithmatex">\(t_f, t_r\)</span> are the track widths.</p>
 <h3 id="22-suspension-geometric-load-transfer-high-fidelity-model">2.2 Suspension Geometric Load Transfer (High-Fidelity Model)</h3>
 <p>The <code>HighFidelityDynamicsModel</code> actively calculates chassis roll (<span class="arithmatex">\(\phi\)</span>) and pitch (<span class="arithmatex">\(\theta\)</span>) by modeling the roll center heights and suspension spring stiffnesses.</p>
 <div class="arithmatex">\[
 \theta = \frac{m a_{cmd} h_{cg}}{K_{pitch}}
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 \phi = \frac{m (v_x r) h_{roll\_arm}}{K_{roll} - m g h_{roll\_arm}}
 \]</div>
 <p>These angles are then used to compute the exact dynamic wheel loads and corresponding camber thrust effects.</p>
@@ -4911,35 +4911,35 @@ $$
 <p>The steady-state kinematic slip angles are computed using the velocities at the front and rear axles:</p>
 <div class="arithmatex">\[
 \alpha_{ss,f} = \delta - \arctan\left(\frac{v_y + l_f r}{v_x}\right)
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 \alpha_{ss,r} = - \arctan\left(\frac{v_y - l_r r}{v_x}\right)
 \]</div>
 <h3 id="32-relaxation-length-first-order-delay">3.2 Relaxation Length (First-Order Delay)</h3>
 <p>Tire forces do not develop instantly. To prevent numerical instability and model real-world high-speed dynamics, a relaxation length (<span class="arithmatex">\(\sigma\)</span>) is introduced:</p>
 <div class="arithmatex">\[
 \dot{\alpha}_f = \frac{v_x}{\sigma_f} (\alpha_{ss,f} - \alpha_f)
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 \dot{\alpha}_r = \frac{v_x}{\sigma_r} (\alpha_{ss,r} - \alpha_r)
 \]</div>
 <h3 id="33-pacejka-magic-formula">3.3 Pacejka Magic Formula</h3>
 <p>The non-linear lateral force <span class="arithmatex">\(F_y\)</span> is computed using a load-dependent Pacejka Magic Formula.</p>
-<p><strong>Friction Coefficient Decay:</strong>
-$$
+<p><strong>Friction Coefficient Decay:</strong></p>
+<div class="arithmatex">\[
 \mu = \mu_0 - d\mu (F_z - F_{z,nom})
-$$</p>
-<p><strong>Cornering Stiffness:</strong>
-$$
+\]</div>
+<p><strong>Cornering Stiffness:</strong></p>
+<div class="arithmatex">\[
 C_\alpha = c_1 F_z - c_2 F_z^2
-$$</p>
-<p><strong>Lateral Force Calculation:</strong>
-$$
+\]</div>
+<p><strong>Lateral Force Calculation:</strong></p>
+<div class="arithmatex">\[
 D = \mu F_z, \quad B = \frac{C_\alpha}{C_{shape} D}
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 F_y = D \sin(C_{shape} \arctan(B \alpha))
-$$</p>
+\]</div>
 <p><em>(In the C++ implementation, standard <code>sin</code> and <code>atan</code> are substituted with high-speed LUT operations via <code>FastMath.hpp</code> when evaluating double precision, accelerating real-time integration.)</em></p>
 <hr />
 <h2 id="4-frenet-kinematics-and-equations-of-motion">4. Frenet Kinematics and Equations of Motion</h2>
@@ -4948,22 +4948,22 @@ $$</p>
 <h3 id="41-kinematics-path-tracking">4.1 Kinematics (Path Tracking)</h3>
 <div class="arithmatex">\[
 \dot{s} = \frac{v_x \cos(\mu) - v_y \sin(\mu)}{1 - d \cdot \kappa}
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 \dot{d} = v_x \sin(\mu) + v_y \cos(\mu)
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 \dot{\mu} = r - \kappa \cdot \dot{s}
 \]</div>
 <p><em>(To avoid singularities when driving strictly backward or perfectly on the path, the denominator <span class="arithmatex">\((1 - d \cdot \kappa)\)</span> is safely bounded.)</em></p>
 <h3 id="42-dynamics-body-accelerations">4.2 Dynamics (Body Accelerations)</h3>
 <div class="arithmatex">\[
 \dot{v}_x = a_{cmd} - \frac{F_{drag}}{m} + r \cdot v_y
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 \dot{v}_y = \frac{F_{y,f} \cos(\delta) + F_{y,r}}{m} - r \cdot v_x
-$$
-$$
+\]</div>
+<div class="arithmatex">\[
 \dot{r} = \frac{l_f F_{y,f} \cos(\delta) - l_r F_{y,r}}{I_z}
 \]</div>
 <p>These equations natively form the <span class="arithmatex">\(\dot{x} = f(x, u)\)</span> vector, which is fed into the Runge-Kutta 4 (RK4) integrator inside the <code>SparseNMPC_IPM</code> solver.</p>

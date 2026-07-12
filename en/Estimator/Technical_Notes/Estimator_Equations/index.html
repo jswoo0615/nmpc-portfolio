@@ -4821,18 +4821,16 @@ P_{k|k} \leftarrow \frac{1}{2} (P_{k|k} + P_{k|k}^T)
 \min_{X} J(X) = J_{\text{arrival}} + J_{\text{meas}} + J_{\text{dyn}}
 \]</div>
 <p>Where:
-1. <strong>Arrival Cost</strong>: Penalizes deviation from the prior state estimate <span class="arithmatex">\(\bar{x}_0\)</span> at the start of the horizon.
-   $$ J_{\text{arrival}} = \frac{1}{2} \left| W_{\text{arr}} (x_0 - \bar{x}_0) \right|_2^2 $$</p>
+1. <strong>Arrival Cost</strong>: Penalizes deviation from the prior state estimate <span class="arithmatex">\(\bar{x}_0\)</span> at the start of the horizon.</p>
+<p>$$ J_{\text{arrival}} = \frac{1}{2} \left| W_{\text{arr}} (x_0 - \bar{x}_0) \right|_2^2 $$</p>
 <ol>
-<li>
-<p><strong>Measurement Cost</strong>: Penalizes deviation between the estimated states and the actual sensor measurements <span class="arithmatex">\(z_k\)</span>.
-   $$ J_{\text{meas}} = \frac{1}{2} \sum_{k=1}^{HE} \left| W_{\text{meas}} (z_k - x_k) \right|_2^2 $$</p>
-</li>
-<li>
-<p><strong>Dynamic Feasibility Cost (Multiple Shooting)</strong>: Penalizes violations of the vehicle dynamics <span class="arithmatex">\(f(x, u)\)</span>.
-   $$ J_{\text{dyn}} = \frac{1}{2} \sum_{k=0}^{HE-1} \left| W_{\text{dyn}} \Big( x_{k+1} - f(x_k, u_k) \Big) \right|_2^2 $$</p>
-</li>
+<li><strong>Measurement Cost</strong>: Penalizes deviation between the estimated states and the actual sensor measurements <span class="arithmatex">\(z_k\)</span>.</li>
 </ol>
+<p>$$ J_{\text{meas}} = \frac{1}{2} \sum_{k=1}^{HE} \left| W_{\text{meas}} (z_k - x_k) \right|_2^2 $$</p>
+<ol>
+<li><strong>Dynamic Feasibility Cost (Multiple Shooting)</strong>: Penalizes violations of the vehicle dynamics <span class="arithmatex">\(f(x, u)\)</span>.</li>
+</ol>
+<p>$$ J_{\text{dyn}} = \frac{1}{2} \sum_{k=0}^{HE-1} \left| W_{\text{dyn}} \Big( x_{k+1} - f(x_k, u_k) \Big) \right|_2^2 $$</p>
 <h3 id="22-gauss-newton-formulation">2.2 Gauss-Newton Formulation</h3>
 <p>To solve this non-linear least-squares problem efficiently within real-time bounds, we apply a Gauss-Newton step. We define the dynamic residual <span class="arithmatex">\(r_k\)</span>:</p>
 <div class="arithmatex">\[
@@ -4840,21 +4838,21 @@ r_k = x_{k+1} - f(x_k, u_k)
 \]</div>
 <p>The cost function is linearized using the system Jacobian <span class="arithmatex">\(J_k = \frac{\partial f}{\partial x_k}\)</span>. The resulting Hessian <span class="arithmatex">\(H\)</span> and gradient <span class="arithmatex">\(g\)</span> are assembled block by block:</p>
 <h4 id="gradient-accumulation">Gradient Accumulation</h4>
-<p>For the arrival node <span class="arithmatex">\(x_0\)</span>:
-$$ g_0 \mathrel{+}= W_{\text{arr}}^2 (x_0 - \bar{x}_0) $$</p>
-<p>For the measurement nodes:
-$$ g_k \mathrel{-}= W_{\text{meas}}^2 (z_k - x_k) $$</p>
-<p>For the dynamic sequence, expanding the residuals yields contributions to node <span class="arithmatex">\(x_k\)</span> and <span class="arithmatex">\(x_{k+1}\)</span>:
-$$ 
+<p>For the arrival node <span class="arithmatex">\(x_0\)</span>:</p>
+<div class="arithmatex">\[ g_0 \mathrel{+}= W_{\text{arr}}^2 (x_0 - \bar{x}_0) \]</div>
+<p>For the measurement nodes:</p>
+<div class="arithmatex">\[ g_k \mathrel{-}= W_{\text{meas}}^2 (z_k - x_k) \]</div>
+<p>For the dynamic sequence, expanding the residuals yields contributions to node <span class="arithmatex">\(x_k\)</span> and <span class="arithmatex">\(x_{k+1}\)</span>:</p>
+<div class="arithmatex">\[ 
 \begin{aligned}
-g_{k+1} &amp;\mathrel{+}= W_{\text{dyn}}^2 r_k \
+g_{k+1} &amp;\mathrel{+}= W_{\text{dyn}}^2 r_k \\
 g_k &amp;\mathrel{-}= J_k^T W_{\text{dyn}}^2 r_k
 \end{aligned}
-$$</p>
+\]</div>
 <h4 id="hessian-accumulation">Hessian Accumulation</h4>
 <p>The Hessian is severely sparse (Block Tridiagonal). 
-- <strong>Main Diagonal Blocks</strong>:
-  $$
+- <strong>Main Diagonal Blocks</strong>:</p>
+<p>$$
   \begin{aligned}
   H_{0,0} &amp;\mathrel{+}= W_{\text{arr}}^2 \
   H_{k,k} &amp;\mathrel{+}= W_{\text{meas}}^2 \
@@ -4863,25 +4861,25 @@ $$</p>
   \end{aligned}
   $$</p>
 <ul>
-<li><strong>Off-Diagonal Blocks (Cross Terms)</strong>:
-  $$
+<li><strong>Off-Diagonal Blocks (Cross Terms)</strong>:</li>
+</ul>
+<p>$$
   \begin{aligned}
   H_{k+1,k} &amp;\mathrel{-}= W_{\text{dyn}}^2 J_k \
   H_{k,k+1} &amp;\mathrel{-}= J_k^T W_{\text{dyn}}^2
   \end{aligned}
-  $$</li>
-</ul>
+  $$</p>
 <h3 id="23-ldlt-factorization-and-primal-update">2.3 LDLT Factorization and Primal Update</h3>
-<p>Once <span class="arithmatex">\(H\)</span> and <span class="arithmatex">\(g\)</span> are fully assembled, a minimal Tikhonov regularization is applied:
-$$ H \leftarrow H + \lambda I \quad (\lambda = 10^{-3}) $$</p>
-<p>The descent direction <span class="arithmatex">\(\Delta X\)</span> is computed by solving the linear system:
-$$ H \Delta X = -g $$</p>
+<p>Once <span class="arithmatex">\(H\)</span> and <span class="arithmatex">\(g\)</span> are fully assembled, a minimal Tikhonov regularization is applied:</p>
+<div class="arithmatex">\[ H \leftarrow H + \lambda I \quad (\lambda = 10^{-3}) \]</div>
+<p>The descent direction <span class="arithmatex">\(\Delta X\)</span> is computed by solving the linear system:</p>
+<div class="arithmatex">\[ H \Delta X = -g \]</div>
 <div class="admonition tip">
 <p class="admonition-title">Architect's Note: Bypassing Matrix Inversion</p>
 <p>The <span class="arithmatex">\(O(N^3)\)</span> Gauss-Jordan matrix inversion is highly detrimental to deterministic execution. <code>SparseMHE.hpp</code> utilizes an inline <strong>LDLT Decomposition solver</strong>, securing the pipeline and completely sidestepping singularities.</p>
 </div>
-<p>The states are then updated with a clamped step size to prevent numerical divergence:
-$$ x_k \leftarrow x_k + \text{clamp}(\Delta x_k, -5.0, 5.0) $$</p>
+<p>The states are then updated with a clamped step size to prevent numerical divergence:</p>
+<div class="arithmatex">\[ x_k \leftarrow x_k + \text{clamp}(\Delta x_k, -5.0, 5.0) \]</div>
 
 
 
