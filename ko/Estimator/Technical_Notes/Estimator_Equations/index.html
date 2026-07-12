@@ -4766,136 +4766,136 @@
 <hr />
 <h2 id="1-extended-kalman-filter-ekf">1. 확장 칼만 필터 (Extended Kalman Filter, EKF)</h2>
 <p>확장 칼만 필터는 비선형 동적 시스템에 대한 재귀적 상태 추정을 제공합니다. 시스템 및 측정 모델은 다음과 같이 정의됩니다:</p>
-<p>$$</p>
-<div class="arithmatex">\[\begin{aligned}
+<div class="arithmatex">\[
+\begin{aligned}
 x_k &amp;= f(x_{k-1}, u_k) + w_k, \quad w_k \sim \mathcal{N}(0, Q) \\
 z_k &amp;= h(x_k) + v_k, \quad v_k \sim \mathcal{N}(0, R)
-\end{aligned}\]</div>
-<p>$$</p>
+\end{aligned}
+\]</div>
 <p>여기서 <span class="arithmatex">\(x_k \in \mathbb{R}^{N_x}\)</span>는 상태, <span class="arithmatex">\(u_k \in \mathbb{R}^{N_u}\)</span>는 제어 입력, <span class="arithmatex">\(z_k \in \mathbb{R}^{N_z}\)</span>는 측정값입니다. 우리의 아키텍처에서는 전체 상태를 직접 측정할 수 있으므로 <span class="arithmatex">\(h(x_k) = x_k\)</span>입니다.</p>
 <h3 id="11-time-update-prediction-step">1.1 예측 단계 (Time Update / Prediction Step)</h3>
 <p>상태 추정치 및 공분산이 시간에 따라 앞으로 전파됩니다:</p>
-<p>$$</p>
-<div class="arithmatex">\[\begin{aligned}
+<div class="arithmatex">\[
+\begin{aligned}
 \hat{x}_{k|k-1} &amp;= f(\hat{x}_{k-1|k-1}, u_k) \\
 P_{k|k-1} &amp;= F_k P_{k-1|k-1} F_k^T + Q
-\end{aligned}\]</div>
-<p>$$</p>
+\end{aligned}
+\]</div>
 <p>여기서 자코비안 행렬 <span class="arithmatex">\(F_k\)</span>는 자동 미분(Automatic Differentiation, AD)을 사용하여 정확하게 계산됩니다:</p>
-<p>$$</p>
-<p>F_k = \left. \frac{\partial f(x, u)}{\partial x} \right|<em k-1_k-1="k-1|k-1">{x=\hat{x}</em>}, u=u_k</p>
-<p>$$</p>
+<div class="arithmatex">\[
+F_k = \left. \frac{\partial f(x, u)}{\partial x} \right|_{x=\hat{x}_{k-1|k-1}, u=u_k}
+\]</div>
 <div class="admonition tip">
 <p class="admonition-title">아키텍트의 노트: SIMD SAXPY 최적화 (Architect's Note)</p>
 <p><code>EKF.hpp</code>에서 <span class="arithmatex">\(F P F^T\)</span>를 단순하게(naive) 계산하려면 임시 전치 행렬 <span class="arithmatex">\(F^T\)</span>를 메모리에 할당해야 합니다. 이러한 오버헤드를 제거하기 위해 엔진은 <strong>Zero-Copy SIMD SAXPY</strong> 연산을 수행하여 스칼라 루프를 물리적으로 언롤링함으로써 <span class="arithmatex">\(P_{k|k-1}\)</span>의 요소를 계산합니다.</p>
 </div>
 <h3 id="12-measurement-update-update-step">1.2 업데이트 단계 (Measurement Update / Update Step)</h3>
 <p>새로운 측정값 <span class="arithmatex">\(z_k\)</span>가 도착하면 이노베이션(innovation, 잔차)을 계산합니다. 요(yaw) 각도 잔차는 <span class="arithmatex">\([-\pi, \pi]\)</span>로 정규화됩니다:</p>
-<p>$$</p>
-<p>y_k = z_k - \hat{x}_{k|k-1}</p>
-<p>$$</p>
+<div class="arithmatex">\[
+y_k = z_k - \hat{x}_{k|k-1}
+\]</div>
 <p>이노베이션 공분산 <span class="arithmatex">\(S_k\)</span>와 칼만 게인(Kalman Gain) <span class="arithmatex">\(K_k\)</span>를 평가합니다:</p>
-<p>$$</p>
-<div class="arithmatex">\[\begin{aligned}
+<div class="arithmatex">\[
+\begin{aligned}
 S_k &amp;= P_{k|k-1} + R \\
 K_k &amp;= P_{k|k-1} S_k^{-1}
-\end{aligned}\]</div>
-<p>$$</p>
+\end{aligned}
+\]</div>
 <p>마지막으로 상태와 공분산을 업데이트합니다:</p>
-<p>$$</p>
-<div class="arithmatex">\[\begin{aligned}
+<div class="arithmatex">\[
+\begin{aligned}
 \hat{x}_{k|k} &amp;= \hat{x}_{k|k-1} + K_k y_k \\
 P_{k|k} &amp;= (I - K_k) P_{k|k-1}
-\end{aligned}\]</div>
-<p>$$</p>
+\end{aligned}
+\]</div>
 <p>수치적 안정성을 보존하기 위해 <span class="arithmatex">\(P_{k|k}\)</span>는 명시적으로 대칭이 되도록 강제됩니다:</p>
-<p>$$</p>
-<p>P_{k|k} \leftarrow \frac{1}{2} (P_{k|k} + P_{k|k}^T)</p>
-<p>$$</p>
+<div class="arithmatex">\[
+P_{k|k} \leftarrow \frac{1}{2} (P_{k|k} + P_{k|k}^T)
+\]</div>
 <hr />
 <h2 id="2-sparse-moving-horizon-estimator-mhe">2. 희소 이동 구간 추정기 (Sparse Moving Horizon Estimator, MHE)</h2>
 <p>가장 최근의 측정값만 엄격하게 사용하는 EKF와 달리, MHE는 이동하는 윈도우(horizon) <span class="arithmatex">\(HE\)</span>에 걸친 상태 추정을 최적화 문제로 공식화합니다. 이는 심한 비선형성과 경계 제약 조건을 훨씬 더 잘 처리합니다.</p>
 <h3 id="21-mhe-mhe-cost-function">2.1 MHE 비용 함수 (MHE Cost Function)</h3>
 <p>목표는 다음 비용 함수(cost functional)를 최소화하는 상태 시퀀스 <span class="arithmatex">\(X = \{ x_0, x_1, \dots, x_{HE} \}\)</span>를 찾는 것입니다:</p>
-<p>$$</p>
-<p>\min_{X} J(X) = J_{\text{arrival}} + J_{\text{meas}} + J_{\text{dyn}}</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\min_{X} J(X) = J_{\text{arrival}} + J_{\text{meas}} + J_{\text{dyn}}
+\]</div>
 <p>여기서:
 1. <strong>도달 비용 (Arrival Cost)</strong>: 구간 시작 시의 이전 상태 추정치 <span class="arithmatex">\(\bar{x}_0\)</span> 로부터의 편차에 페널티를 부여합니다.</p>
-<p>$$</p>
-<p>J_{\text{arrival}} = \frac{1}{2} \left| W_{\text{arr}} (x_0 - \bar{x}_0) \right|_2^2 </p>
-<p>$$</p>
+<p>$$
+   J_{\text{arrival}} = \frac{1}{2} \left| W_{\text{arr}} (x_0 - \bar{x}_0) \right|_2^2
+   $$</p>
 <ol>
 <li><strong>측정 비용 (Measurement Cost)</strong>: 추정된 상태와 실제 센서 측정값 <span class="arithmatex">\(z_k\)</span> 간의 편차에 페널티를 부여합니다.</li>
 </ol>
-<p>$$</p>
-<p>J_{\text{meas}} = \frac{1}{2} \sum_{k=1}^{HE} \left| W_{\text{meas}} (z_k - x_k) \right|_2^2 </p>
-<p>$$</p>
+<p>$$
+   J_{\text{meas}} = \frac{1}{2} \sum_{k=1}^{HE} \left| W_{\text{meas}} (z_k - x_k) \right|_2^2
+   $$</p>
 <ol>
 <li><strong>동적 타당성 비용 (Dynamic Feasibility Cost / Multiple Shooting)</strong>: 차량 동역학 <span class="arithmatex">\(f(x, u)\)</span> 위반에 페널티를 부여합니다.</li>
 </ol>
-<p>$$</p>
-<p>J_{\text{dyn}} = \frac{1}{2} \sum_{k=0}^{HE-1} \left| W_{\text{dyn}} \Big( x_{k+1} - f(x_k, u_k) \Big) \right|_2^2 </p>
-<p>$$</p>
+<p>$$
+   J_{\text{dyn}} = \frac{1}{2} \sum_{k=0}^{HE-1} \left| W_{\text{dyn}} \Big( x_{k+1} - f(x_k, u_k) \Big) \right|_2^2
+   $$</p>
 <h3 id="22-gauss-newton-formulation">2.2 가우스-뉴턴 공식화 (Gauss-Newton Formulation)</h3>
 <p>실시간 한계 내에서 이 비선형 최소제곱 문제를 효율적으로 풀기 위해 가우스-뉴턴(Gauss-Newton) 스텝을 적용합니다. 동적 잔차(dynamic residual) <span class="arithmatex">\(r_k\)</span>를 정의합니다:</p>
-<p>$$</p>
-<p>r_k = x_{k+1} - f(x_k, u_k)</p>
-<p>$$</p>
+<div class="arithmatex">\[
+r_k = x_{k+1} - f(x_k, u_k)
+\]</div>
 <p>시스템 자코비안 <span class="arithmatex">\(J_k = \frac{\partial f}{\partial x_k}\)</span>를 사용하여 비용 함수를 선형화합니다. 결과적인 헤시안(Hessian) <span class="arithmatex">\(H\)</span>와 그래디언트(gradient) <span class="arithmatex">\(g\)</span>는 블록 단위로 조립됩니다:</p>
 <h4 id="gradient-accumulation">그래디언트 누적 (Gradient Accumulation)</h4>
 <p>도달 노드 <span class="arithmatex">\(x_0\)</span>에 대해:</p>
-<p>$$</p>
-<p>g_0 \mathrel{+}= W_{\text{arr}}^2 (x_0 - \bar{x}_0) </p>
-<p>$$</p>
+<div class="arithmatex">\[
+g_0 \mathrel{+}= W_{\text{arr}}^2 (x_0 - \bar{x}_0)
+\]</div>
 <p>측정 노드들에 대해:</p>
-<p>$$</p>
-<p>g_k \mathrel{-}= W_{\text{meas}}^2 (z_k - x_k) </p>
-<p>$$</p>
+<div class="arithmatex">\[
+g_k \mathrel{-}= W_{\text{meas}}^2 (z_k - x_k)
+\]</div>
 <p>동적 시퀀스의 경우 잔차를 전개하면 노드 <span class="arithmatex">\(x_k\)</span>와 <span class="arithmatex">\(x_{k+1}\)</span>에 대한 기여가 생성됩니다:</p>
-<p>$$</p>
-<div class="arithmatex">\[\begin{aligned}
+<div class="arithmatex">\[ 
+\begin{aligned}
 g_{k+1} &amp;\mathrel{+}= W_{\text{dyn}}^2 r_k \\
 g_k &amp;\mathrel{-}= J_k^T W_{\text{dyn}}^2 r_k
-\end{aligned}\]</div>
-<p>$$</p>
+\end{aligned}
+\]</div>
 <h4 id="hessian-accumulation">헤시안 누적 (Hessian Accumulation)</h4>
 <p>헤시안은 극도로 희소(블록 삼중 대각, Block Tridiagonal)합니다.
 - <strong>주대각 블록 (Main Diagonal Blocks)</strong>:</p>
-<p>$$</p>
-<p>\begin{aligned}
+<p>$$
+  \begin{aligned}
   H_{0,0} &amp;\mathrel{+}= W_{\text{arr}}^2 \
   H_{k,k} &amp;\mathrel{+}= W_{\text{meas}}^2 \
   H_{k+1,k+1} &amp;\mathrel{+}= W_{\text{dyn}}^2 \
   H_{k,k} &amp;\mathrel{+}= J_k^T W_{\text{dyn}}^2 J_k
-  \end{aligned}</p>
-<p>$$</p>
+  \end{aligned}
+  $$</p>
 <ul>
 <li><strong>비대각 블록 / 교차 항 (Off-Diagonal Blocks / Cross Terms)</strong>:</li>
 </ul>
-<p>$$</p>
-<p>\begin{aligned}
+<p>$$
+  \begin{aligned}
   H_{k+1,k} &amp;\mathrel{-}= W_{\text{dyn}}^2 J_k \
   H_{k,k+1} &amp;\mathrel{-}= J_k^T W_{\text{dyn}}^2
-  \end{aligned}</p>
-<p>$$</p>
+  \end{aligned}
+  $$</p>
 <h3 id="23-ldlt-ldlt-factorization-and-primal-update">2.3 LDLT 분해 및 원시 업데이트 (LDLT Factorization and Primal Update)</h3>
 <p><span class="arithmatex">\(H\)</span>와 <span class="arithmatex">\(g\)</span>가 완전히 조립되면 최소한의 Tikhonov 정규화(regularization)가 적용됩니다:</p>
-<p>$$</p>
-<p>H \leftarrow H + \lambda I \quad (\lambda = 10^{-3}) </p>
-<p>$$</p>
+<div class="arithmatex">\[
+H \leftarrow H + \lambda I \quad (\lambda = 10^{-3})
+\]</div>
 <p>선형 시스템을 풀어서 하강 방향(descent direction) <span class="arithmatex">\(\Delta X\)</span>를 계산합니다:</p>
-<p>$$</p>
-<p>H \Delta X = -g </p>
-<p>$$</p>
+<div class="arithmatex">\[
+H \Delta X = -g
+\]</div>
 <div class="admonition tip">
 <p class="admonition-title">아키텍트의 노트: 행렬 역산 우회 (Architect's Note)</p>
 <p><span class="arithmatex">\(O(N^3)\)</span> 가우스-조던(Gauss-Jordan) 행렬 역산은 결정론적 실행에 매우 해롭습니다. <code>SparseMHE.hpp</code>는 인라인 <strong>LDLT 분해(Decomposition) 솔버</strong>를 활용하여 파이프라인을 보호하고 특이점(singularities)을 완전히 피합니다.</p>
 </div>
 <p>그런 다음 수치적 발산을 방지하기 위해 제한된 스텝 크기(clamped step size)로 상태를 업데이트합니다:</p>
-<p>$$</p>
-<p>x_k \leftarrow x_k + \text{clamp}(\Delta x_k, -5.0, 5.0) </p>
-<p>$$</p>
+<div class="arithmatex">\[
+x_k \leftarrow x_k + \text{clamp}(\Delta x_k, -5.0, 5.0)
+\]</div>
 
 
 

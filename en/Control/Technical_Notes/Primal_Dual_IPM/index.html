@@ -4720,11 +4720,10 @@
 <p>The optimal solution must satisfy the Karush-Kuhn-Tucker (KKT) conditions, where the gradient becomes zero. We modify the Complementarity condition to include the barrier parameter <span class="arithmatex">\(\mu\)</span>.</p>
 <div class="admonition math">
 <p class="admonition-title">Modified Complementarity</p>
+<div class="arithmatex">\[
+s_{i} \cdot \lambda_{i} = \mu
+\]</div>
 </div>
-<p>$$</p>
-<div class="highlight"><pre><span></span><code>s_{i} \cdot \lambda_{i} = \mu
-</code></pre></div>
-<p>$$</p>
 <p><em>(The product of the slack variable <span class="arithmatex">\(s\)</span> and the dual variable <span class="arithmatex">\(\lambda\)</span> must equal <span class="arithmatex">\(\mu\)</span>)</em></p>
 <h3 id="b-direct-solution-via-newtons-method-primal-dual-approach">B. Direct Solution via Newton's Method (Primal-Dual Approach)</h3>
 <p>We solve this entire modified KKT system directly using a Gauss-Newton approximated <strong>Riccati Solver (<span class="arithmatex">\(\mathcal{O}(H)\)</span> time complexity)</strong>. We find the solution by simultaneously updating the state variables (<span class="arithmatex">\(x\)</span>, Primal) and the dual variables (<span class="arithmatex">\(\lambda\)</span>, Dual).</p>

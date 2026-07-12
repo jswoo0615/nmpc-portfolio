@@ -4656,87 +4656,87 @@
 <p>To solve the sparse equality-constrained Quadratic Programming (QP) problem efficiently across a prediction horizon <span class="arithmatex">\(H\)</span>, the NMPC utilizes <strong>Dynamic Programming</strong> via the Riccati Equation. This reduces the time complexity from <span class="arithmatex">\(\mathcal{O}(H^3)\)</span> (for dense inversion) to <span class="arithmatex">\(\mathcal{O}(H)\)</span>.</p>
 <h3 id="11-problem-formulation">1.1 Problem Formulation</h3>
 <p>Given the linearized system dynamics:</p>
-<p>$$</p>
-<p>\delta x_{k+1} = A_k \delta x_k + B_k \delta u_k + d_k </p>
-<p>$$</p>
+<div class="arithmatex">\[
+\delta x_{k+1} = A_k \delta x_k + B_k \delta u_k + d_k
+\]</div>
 <p>And the quadratic cost function approximation:</p>
-<p>$$</p>
-<p>J = \frac{1}{2} \delta x_H^T Q_H \delta x_H + q_H^T \delta x_H + \sum_{k=0}^{H-1} \left( \frac{1}{2} \delta x_k^T Q_k \delta x_k + q_k^T \delta x_k + \frac{1}{2} \delta u_k^T R_k \delta u_k + r_k^T \delta u_k \right) </p>
-<p>$$</p>
+<div class="arithmatex">\[
+J = \frac{1}{2} \delta x_H^T Q_H \delta x_H + q_H^T \delta x_H + \sum_{k=0}^{H-1} \left( \frac{1}{2} \delta x_k^T Q_k \delta x_k + q_k^T \delta x_k + \frac{1}{2} \delta u_k^T R_k \delta u_k + r_k^T \delta u_k \right)
+\]</div>
 <p>We define the Optimal Value Function (Cost-to-Go) at step <span class="arithmatex">\(k\)</span>:</p>
-<p>$$</p>
-<p>V_k(\delta x) = \frac{1}{2} \delta x^T P_k \delta x + p_k^T \delta x </p>
-<p>$$</p>
+<div class="arithmatex">\[
+V_k(\delta x) = \frac{1}{2} \delta x^T P_k \delta x + p_k^T \delta x
+\]</div>
 <h3 id="12-backward-pass-value-iteration">1.2 Backward Pass (Value Iteration)</h3>
 <p>Starting from the terminal state <span class="arithmatex">\(P_H = Q_H\)</span> and <span class="arithmatex">\(p_H = q_H\)</span>, we recurse backward (<span class="arithmatex">\(k = H-1 \dots 0\)</span>) to calculate the optimal feedback policy:</p>
 <ol>
 <li><strong>Control Hessian &amp; Gradient</strong>:</li>
 </ol>
-<p>$$</p>
-<p>Q_{uu} = R_k + B_k^T P_{k+1} B_k + \lambda_{LM} I </p>
-<p>$$</p>
-<p>$$</p>
-<p>Q_{ux} = B_k^T P_{k+1} A_k </p>
-<p>$$</p>
-<p>$$</p>
-<p>q_u = r_k + B_k^T (p_{k+1} + P_{k+1} d_k) </p>
-<p>$$</p>
+<p>$$
+   Q_{uu} = R_k + B_k^T P_{k+1} B_k + \lambda_{LM} I
+   $$</p>
+<p>$$
+   Q_{ux} = B_k^T P_{k+1} A_k
+   $$</p>
+<p>$$
+   q_u = r_k + B_k^T (p_{k+1} + P_{k+1} d_k)
+   $$</p>
 <p><em>(Note: <span class="arithmatex">\(\lambda_{LM}\)</span> is the Levenberg-Marquardt regularization factor to guarantee positive definiteness).</em></p>
 <ol>
 <li><strong>Optimal Policy Gains</strong>:
    We solve for the Feedback (<span class="arithmatex">\(K_k\)</span>) and Feedforward (<span class="arithmatex">\(k_{ff, k}\)</span>) gains using LDLT Decomposition on <span class="arithmatex">\(Q_{uu}\)</span>:</li>
 </ol>
-<p>$$</p>
-<p>K_k = -Q_{uu}^{-1} Q_{ux} </p>
-<p>$$</p>
-<p>$$</p>
-<p>k_{ff, k} = -Q_{uu}^{-1} q_u </p>
-<p>$$</p>
+<p>$$
+   K_k = -Q_{uu}^{-1} Q_{ux}
+   $$</p>
+<p>$$
+   k_{ff, k} = -Q_{uu}^{-1} q_u
+   $$</p>
 <ol>
 <li><strong>Value Function Update</strong>:</li>
 </ol>
-<p>$$</p>
-<p>P_k = Q_k + A_k^T P_{k+1} A_k + K_k^T Q_{ux} </p>
-<p>$$</p>
-<p>$$</p>
-<p>p_k = q_k + A_k^T (p_{k+1} + P_{k+1} d_k) + Q_{ux}^T k_{ff, k} </p>
-<p>$$</p>
+<p>$$
+   P_k = Q_k + A_k^T P_{k+1} A_k + K_k^T Q_{ux}
+   $$</p>
+<p>$$
+   p_k = q_k + A_k^T (p_{k+1} + P_{k+1} d_k) + Q_{ux}^T k_{ff, k}
+   $$</p>
 <h3 id="13-forward-pass-trajectory-simulation">1.3 Forward Pass (Trajectory Simulation)</h3>
 <p>Once the gains are computed, we simulate the optimal trajectory forward from the initial state <span class="arithmatex">\(\delta x_0 = 0\)</span>:</p>
-<p>$$</p>
-<p>\delta u_k = K_k \delta x_k + k_{ff, k} </p>
-<p>$$</p>
-<p>$$</p>
-<p>\delta x_{k+1} = A_k \delta x_k + B_k \delta u_k + d_k </p>
-<p>$$</p>
+<div class="arithmatex">\[
+\delta u_k = K_k \delta x_k + k_{ff, k}
+\]</div>
+<div class="arithmatex">\[
+\delta x_{k+1} = A_k \delta x_k + B_k \delta u_k + d_k
+\]</div>
 <hr />
 <h2 id="2-kkt-convergence-metrics">2. KKT Convergence Metrics</h2>
 <p>To verify if the non-linear optimization has successfully converged, the <code>KKTMonitor</code> checks the four Karush-Kuhn-Tucker conditions. A solution is optimal if all <span class="arithmatex">\(L_\infty\)</span> norms are below a <code>TOLERANCE</code> <span class="arithmatex">\(\tau\)</span> (e.g., <span class="arithmatex">\(10^{-6}\)</span>).</p>
 <ol>
 <li><strong>Stationarity (Gradient of Lagrangian is zero)</strong>:</li>
 </ol>
-<p>$$</p>
-<p>| \nabla L(x, u, \lambda, \mu) |_\infty \le \tau </p>
-<p>$$</p>
+<p>$$
+   | \nabla L(x, u, \lambda, \mu) |_\infty \le \tau
+   $$</p>
 <ol>
 <li><strong>Primal Feasibility (Constraints are satisfied)</strong>:</li>
 </ol>
-<p>$$</p>
-<p>| x_{k+1} - f(x_k, u_k) |_\infty \le \tau </p>
-<p>$$</p>
+<p>$$
+   | x_{k+1} - f(x_k, u_k) |_\infty \le \tau
+   $$</p>
 <ol>
 <li><strong>Dual Feasibility (Inequality multipliers are non-negative)</strong>:</li>
 </ol>
-<p>$$</p>
-<p>\max(0, -\mu) \le \tau </p>
-<p>$$</p>
+<p>$$
+   \max(0, -\mu) \le \tau
+   $$</p>
 <ol>
 <li><strong>Complementary Slackness (Active constraint alignment)</strong>:
    In the Interior Point Method, this is modified by the barrier parameter <span class="arithmatex">\(\mu_{target}\)</span>:</li>
 </ol>
-<p>$$</p>
-<p>| S \mu - \mu_{target} \mathbf{1} |_\infty \le \tau </p>
-<p>$$</p>
+<p>$$
+   | S \mu - \mu_{target} \mathbf{1} |_\infty \le \tau
+   $$</p>
 <p><em>(Where <span class="arithmatex">\(S\)</span> is the diagonal matrix of slack variables).</em></p>
 
 

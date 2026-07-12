@@ -4719,11 +4719,10 @@ If <span class="arithmatex">\(s = 3\)</span>, since slack variables are introduc
 <p>When the physical constraint (e.g., safe margin violation) is <span class="arithmatex">\(c(x) \le 0\)</span>, the IPM solver introduces a virtual positive variable <span class="arithmatex">\(s\)</span> (<span class="arithmatex">\(s &gt; 0\)</span>) to forcefully convert it into a <strong>perfect Equality</strong>.</p>
 <div class="admonition math">
 <p class="admonition-title">Equality Constraint</p>
+<div class="arithmatex">\[
+c(x) + s = 0 \quad \text{subject to } s &gt; 0
+\]</div>
 </div>
-<p>$$</p>
-<div class="highlight"><pre><span></span><code>c(x) + s = 0 \quad \text{subject to } s &gt; 0
-</code></pre></div>
-<p>$$</p>
 <ul>
 <li><strong>Consistent State</strong>: If the vehicle is 5m away from an obstacle (<span class="arithmatex">\(c(x) = -5\)</span>), the slack variable <span class="arithmatex">\(s\)</span> must be exactly <span class="arithmatex">\(5\)</span> for the equation to equal <span class="arithmatex">\(0\)</span> (<span class="arithmatex">\(-5 + 5 = 0\)</span>).</li>
 </ul>
@@ -4769,27 +4768,21 @@ Conversely, the physical law <span class="arithmatex">\(c(x)\)</span> and the ma
 </blockquote>
 <h3 id="answer-theoretical-unity-vs-numerical-separation">Answer: Theoretical Unity vs. Numerical Separation</h3>
 <p>Theoretically, you are 100% correct. However, the moment the math on paper is translated into a <strong>C++ Numerical Solver</strong>, they are divorced into completely independent variables.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">1. Solver Structure: Dimensional Lifting</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">1. Solver Structure: Dimensional Lifting</label><label for="__tabbed_1_2">2. The Betrayal of Linearization (Linearization Error)</label><label for="__tabbed_1_3">3. The True Role of L1 Penalty: A Mathematical Rubber Band</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>If the slack variable were completely tied to the constraint, the solver could just substitute <span class="arithmatex">\(-c(x)\)</span> for <span class="arithmatex">\(s\)</span> and solve:</p>
+<div class="arithmatex">\[
+-\mu \log(-c(x))
+\]</div>
+<p>However, if <span class="arithmatex">\(c(x)\)</span> is a non-linear function, trapping a non-linear function inside a log function causes the Jacobian and Hessian matrices to become incredibly tangled. It becomes a horrific computation impossible to solve within <span class="arithmatex">\(25\text{ms}\)</span>.</p>
+<p>Instead, IPM designers approach it differently: <strong>"Let's elevate the slack variable <span class="arithmatex">\(s\)</span> from a dependent variable of <span class="arithmatex">\(x\)</span> to a 'completely independent optimization variable' on par with <span class="arithmatex">\(x\)</span>!"</strong></p>
+<ul>
+<li><strong>Original Variable</strong>: <span class="arithmatex">\(x\)</span> (vehicle state, steering, etc.)</li>
+<li><strong>IPM Variable</strong>: <span class="arithmatex">\(Z = [x, s, \lambda]^\top\)</span></li>
+</ul>
+<p>Now, in the eyes of the solver, <span class="arithmatex">\(x\)</span> and <span class="arithmatex">\(s\)</span> are just array indices <code>Z[0]</code> and <code>Z[1]</code>. They have gained the right to move completely independently.</p>
 </div>
-</div>
-</div>
-<p>$$</p>
-<p>-\mu \log(-c(x))</p>
-<p>$$</p>
-<div class="highlight"><pre><span></span><code>However, if $c(x)$ is a non-linear function, trapping a non-linear function inside a log function causes the Jacobian and Hessian matrices to become incredibly tangled. It becomes a horrific computation impossible to solve within $25\text{ms}$.
-
-Instead, IPM designers approach it differently: **&quot;Let&#39;s elevate the slack variable $s$ from a dependent variable of $x$ to a &#39;completely independent optimization variable&#39; on par with $x$!&quot;**
-
-- **Original Variable**: $x$ (vehicle state, steering, etc.)
-- **IPM Variable**: $Z = [x, s, \lambda]^\top$
-
-Now, in the eyes of the solver, $x$ and $s$ are just array indices `Z[0]` and `Z[1]`. They have gained the right to move completely independently.
-</code></pre></div>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">2. The Betrayal of Linearization (Linearization Error)</label><label for="__tabbed_2_2">3. The True Role of L1 Penalty: A Mathematical Rubber Band</label></div>
-<div class="tabbed-content">
 <div class="tabbed-block">
 <p>Taking these two independent variables <span class="arithmatex">\(x\)</span> and <span class="arithmatex">\(s\)</span>, the solver uses Newton's Method for the next step. Newton's Method predicts the complex curved world by bluntly simplifying it into "straight lines" (tangents).</p>
 <p>The solver solves the system of equations to calculate independent steps (<span class="arithmatex">\(\Delta x\)</span>, <span class="arithmatex">\(\Delta s\)</span>):</p>
@@ -4807,12 +4800,12 @@ Now, in the eyes of the solver, $x$ and $s$ are just array indices `Z[0]` and `Z
 <div class="tabbed-block">
 <p>In summary, <strong>while the slack variable <span class="arithmatex">\(s\)</span> is inherently born from the constraint <span class="arithmatex">\(c(x)\)</span>, it is unleashed as an 'independent free variable' inside the solver to speed up optimization.</strong></p>
 <p>When these two freed variables (<span class="arithmatex">\(c(x)\)</span> and <span class="arithmatex">\(s\)</span>) try to tear apart due to linearization errors, the <strong>ruthless mathematical rubber band</strong> that forcefully binds them together is the L1 Penalty term:</p>
+<div class="arithmatex">\[
+w_{L1} |c(x_{\text{new}}) + s_{\text{new}}|
+\]</div>
 </div>
 </div>
 </div>
-<p>$$</p>
-<p>w_{L1} |c(x_{\text{new}}) + s_{\text{new}}|</p>
-<p>$$</p>
 
 
 

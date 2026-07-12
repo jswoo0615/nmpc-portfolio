@@ -4712,22 +4712,22 @@
 <p>Traditional finite difference methods suffer from catastrophic cancellation and floating-point truncation errors. To compute exact Jacobians <span class="arithmatex">\(J = \frac{\partial f}{\partial x}\)</span> in a single evaluation pass, we employ <strong>Dual Numbers</strong>.</p>
 <h3 id="11-dual-number-algebra">1.1 Dual Number Algebra</h3>
 <p>A dual number <span class="arithmatex">\(z\)</span> is defined as <span class="arithmatex">\(z = v + g \epsilon\)</span>, where <span class="arithmatex">\(v\)</span> is the real (primal) part, <span class="arithmatex">\(g\)</span> is the dual (gradient) part, and <span class="arithmatex">\(\epsilon\)</span> is an infinitesimal unit satisfying:</p>
-<p>$$</p>
-<p>\epsilon \neq 0, \quad \epsilon^2 = 0 </p>
-<p>$$</p>
+<div class="arithmatex">\[
+\epsilon \neq 0, \quad \epsilon^2 = 0
+\]</div>
 <p>By performing Taylor expansion on any smooth function <span class="arithmatex">\(f(x)\)</span>:</p>
-<p>$$</p>
-<p>f(v + g \epsilon) = f(v) + f'(v)(g \epsilon) + \frac{f''(v)}{2}(g \epsilon)^2 + \dots </p>
-<p>$$</p>
+<div class="arithmatex">\[
+f(v + g \epsilon) = f(v) + f'(v)(g \epsilon) + \frac{f''(v)}{2}(g \epsilon)^2 + \dots
+\]</div>
 <p>Since <span class="arithmatex">\(\epsilon^2 = 0\)</span>, all higher-order terms vanish instantly, yielding exact analytical derivatives:</p>
-<p>$$</p>
-<p>f(v + g \epsilon) = f(v) + f'(v) g \epsilon </p>
-<p>$$</p>
+<div class="arithmatex">\[
+f(v + g \epsilon) = f(v) + f'(v) g \epsilon
+\]</div>
 <h3 id="12-multidimensional-propagation-dualvec">1.2 Multidimensional Propagation (<code>DualVec</code>)</h3>
 <p>In <code>DualVec&lt;T, N&gt;</code>, the gradient <span class="arithmatex">\(g\)</span> is extended to a vector <span class="arithmatex">\(\mathbf{g} \in \mathbb{R}^N\)</span>. Applying a multivariable function <span class="arithmatex">\(f: \mathbb{R} \to \mathbb{R}\)</span>:</p>
-<p>$$</p>
-<p>f(v + \mathbf{g} \epsilon) = f(v) + \nabla f(v) \cdot \mathbf{g} \epsilon </p>
-<p>$$</p>
+<div class="arithmatex">\[
+f(v + \mathbf{g} \epsilon) = f(v) + \nabla f(v) \cdot \mathbf{g} \epsilon
+\]</div>
 <p>For fundamental operations, the algebraic rules map directly to SIMD vectorized execution:</p>
 <ul>
 <li><strong>Addition</strong>: <span class="arithmatex">\((v_1 + \mathbf{g}_1 \epsilon) + (v_2 + \mathbf{g}_2 \epsilon) = (v_1 + v_2) + (\mathbf{g}_1 + \mathbf{g}_2) \epsilon\)</span></li>
@@ -4739,50 +4739,50 @@
 <p>Solving the system of linear equations <span class="arithmatex">\(Ax = b\)</span> efficiently without heap allocations is the primary objective of the <code>Linalg</code> module.</p>
 <h3 id="21-cholesky-decomposition-a-llt">2.1 Cholesky Decomposition (<span class="arithmatex">\(A = LL^T\)</span>)</h3>
 <p>For a symmetric positive-definite matrix <span class="arithmatex">\(A\)</span>, Cholesky factorization computes a lower triangular matrix <span class="arithmatex">\(L\)</span>:</p>
-<p>$$</p>
-<p>A = L L^T </p>
-<p>$$</p>
+<div class="arithmatex">\[
+A = L L^T
+\]</div>
 <p>The elements of <span class="arithmatex">\(L\)</span> are derived sequentially. For the diagonal entries:</p>
-<p>$$</p>
-<p>L_{j,j} = \sqrt{A_{j,j} - \sum_{k=0}^{j-1} L_{j,k}^2} </p>
-<p>$$</p>
+<div class="arithmatex">\[
+L_{j,j} = \sqrt{A_{j,j} - \sum_{k=0}^{j-1} L_{j,k}^2}
+\]</div>
 <p>For the off-diagonal entries (<span class="arithmatex">\(i &gt; j\)</span>):</p>
-<p>$$</p>
-<p>L_{i,j} = \frac{1}{L_{j,j}} \left( A_{i,j} - \sum_{k=0}^{j-1} L_{i,k} L_{j,k} \right) </p>
-<p>$$</p>
+<div class="arithmatex">\[
+L_{i,j} = \frac{1}{L_{j,j}} \left( A_{i,j} - \sum_{k=0}^{j-1} L_{i,k} L_{j,k} \right)
+\]</div>
 <div class="admonition tip">
 <p class="admonition-title">SIMD Hardware Acceleration</p>
 <p>In our <code>cholesky_solver</code>, the dot product <span class="arithmatex">\(\sum L_{i,k} L_{j,k}\)</span> is computed block-by-block using SIMD instructions like AVX2 FMA (Fused Multiply-Add), bypassing scalar loops.</p>
 </div>
 <h3 id="22-ldlt-decomposition-a-ldlt">2.2 LDLT Decomposition (<span class="arithmatex">\(A = LDL^T\)</span>)</h3>
 <p>When <span class="arithmatex">\(A\)</span> approaches singularity or has negative eigenvalues (e.g., poorly conditioned Hessians without enough regularization), Cholesky fails due to the square root of a negative number. The LDLT factorization avoids square roots entirely:</p>
-<p>$$</p>
-<p>A = L D L^T </p>
-<p>$$</p>
+<div class="arithmatex">\[
+A = L D L^T
+\]</div>
 <p>Where <span class="arithmatex">\(D\)</span> is a diagonal matrix. The recursive formulas are:</p>
-<p>$$</p>
-<p>D_{j,j} = A_{j,j} - \sum_{k=0}^{j-1} L_{j,k}^2 D_{k,k} </p>
-<p>$$</p>
-<p>$$</p>
-<p>L_{i,j} = \frac{1}{D_{j,j}} \left( A_{i,j} - \sum_{k=0}^{j-1} L_{i,k} L_{j,k} D_{k,k} \right) </p>
-<p>$$</p>
+<div class="arithmatex">\[
+D_{j,j} = A_{j,j} - \sum_{k=0}^{j-1} L_{j,k}^2 D_{k,k}
+\]</div>
+<div class="arithmatex">\[
+L_{i,j} = \frac{1}{D_{j,j}} \left( A_{i,j} - \sum_{k=0}^{j-1} L_{i,k} L_{j,k} D_{k,k} \right)
+\]</div>
 <h3 id="23-qr-decomposition-householder-reflections">2.3 QR Decomposition (Householder Reflections)</h3>
 <p>For non-square or severely ill-conditioned systems, QR decomposition factorizes <span class="arithmatex">\(A\)</span> into an orthogonal matrix <span class="arithmatex">\(Q\)</span> (<span class="arithmatex">\(Q^T Q = I\)</span>) and an upper triangular matrix <span class="arithmatex">\(R\)</span>:</p>
-<p>$$</p>
-<p>A = Q R </p>
-<p>$$</p>
+<div class="arithmatex">\[
+A = Q R
+\]</div>
 <p>We utilize <strong>Householder Reflections</strong> to zero out elements below the diagonal. For a target column vector <span class="arithmatex">\(x\)</span>, we design a reflection hyperplane with normal vector <span class="arithmatex">\(v\)</span>:</p>
-<p>$$</p>
-<p>v = x + \text{sign}(x_1) |x|_2 e_1 </p>
-<p>$$</p>
+<div class="arithmatex">\[
+v = x + \text{sign}(x_1) \|x\|_2 e_1
+\]</div>
 <p>The reflection matrix is:</p>
-<p>$$</p>
-<p>H = I - 2 \frac{v v^T}{v^T v} </p>
-<p>$$</p>
+<div class="arithmatex">\[
+H = I - 2 \frac{v v^T}{v^T v}
+\]</div>
 <p>Applying this reflection recursively iteratively triangularizes <span class="arithmatex">\(A\)</span>. The solution to <span class="arithmatex">\(Ax = b\)</span> becomes robust against noise:</p>
-<p>$$</p>
-<p>Rx = Q^T b </p>
-<p>$$</p>
+<div class="arithmatex">\[
+Rx = Q^T b
+\]</div>
 
 
 

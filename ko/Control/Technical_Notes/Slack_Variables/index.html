@@ -4719,11 +4719,10 @@
 <p>물리적 제약 조건(예: 안전 여유 위반)이 <span class="arithmatex">\(c(x) \le 0\)</span>일 때, IPM 솔버는 가상의 양수 변수 <span class="arithmatex">\(s\)</span> (<span class="arithmatex">\(s &gt; 0\)</span>)를 도입하여 이를 <strong>완벽한 등식(Equality)</strong> 으로 강제 변환합니다.</p>
 <div class="admonition math">
 <p class="admonition-title">등식 제약 조건 (Equality Constraint)</p>
+<div class="arithmatex">\[
+c(x) + s = 0 \quad \text{단, } s &gt; 0
+\]</div>
 </div>
-<p>$$</p>
-<div class="highlight"><pre><span></span><code>c(x) + s = 0 \quad \text{단, } s &gt; 0
-</code></pre></div>
-<p>$$</p>
 <ul>
 <li><strong>일관된 상태 (Consistent State)</strong>: 차량이 장애물에서 5m 떨어져 있다면 (<span class="arithmatex">\(c(x) = -5\)</span>), 이 방정식이 <span class="arithmatex">\(0\)</span>이 되기 위해서는 (<span class="arithmatex">\(-5 + 5 = 0\)</span>) 여유 변수 <span class="arithmatex">\(s\)</span>가 정확히 <span class="arithmatex">\(5\)</span>여야만 합니다.</li>
 </ul>
@@ -4769,27 +4768,21 @@
 </blockquote>
 <h3 id="vs-theoretical-unity-vs-numerical-separation">답변: 이론적 통합 vs. 수치적 분리 (Theoretical Unity vs. Numerical Separation)</h3>
 <p>이론적으로는 질문이 100% 맞습니다. 그러나 종이 위의 수학이 <strong>C++ 수치 솔버(Numerical Solver)</strong> 로 변환되는 순간, 이들은 완전히 독립적인 변수들로 이혼(?)하게 됩니다.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">1. 솔버 구조: 차원 격상 (Solver Structure: Dimensional Lifting)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">1. 솔버 구조: 차원 격상 (Solver Structure: Dimensional Lifting)</label><label for="__tabbed_1_2">2. 선형화의 배신 (선형화 오차) (The Betrayal of Linearization / Linearization Error)</label><label for="__tabbed_1_3">3. L1 페널티의 진정한 역할: 수학적 고무줄 (The True Role of L1 Penalty: A Mathematical Rubber Band)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>만약 여유 변수가 제약 조건에 완전히 묶여 있다면, 솔버는 단순히 <span class="arithmatex">\(s\)</span> 대신 <span class="arithmatex">\(-c(x)\)</span>를 대입하여 다음을 풀면 됩니다:</p>
+<div class="arithmatex">\[
+-\mu \log(-c(x))
+\]</div>
+<p>그러나 <span class="arithmatex">\(c(x)\)</span>가 비선형 함수라면, 비선형 함수를 로그 함수 안에 가두게 되어 자코비안과 헤시안 행렬이 엄청나게 꼬이게 됩니다. <span class="arithmatex">\(25\text{ms}\)</span> 안에는 도저히 풀 수 없는 끔찍한 연산이 되어버립니다.</p>
+<p>대신 IPM 설계자들은 다르게 접근합니다: <strong>"여유 변수 <span class="arithmatex">\(s\)</span>를 <span class="arithmatex">\(x\)</span>의 종속 변수에서 <span class="arithmatex">\(x\)</span>와 동급인 '완전히 독립적인 최적화 변수'로 격상시키자!"</strong></p>
+<ul>
+<li><strong>원래 변수</strong>: <span class="arithmatex">\(x\)</span> (차량 상태, 조향 등)</li>
+<li><strong>IPM 변수</strong>: <span class="arithmatex">\(Z = [x, s, \lambda]^\top\)</span></li>
+</ul>
+<p>이제 솔버의 눈에는 <span class="arithmatex">\(x\)</span>와 <span class="arithmatex">\(s\)</span>가 단지 배열 인덱스 <code>Z[0]</code>과 <code>Z[1]</code>일 뿐입니다. 그들은 완전히 독립적으로 움직일 수 있는 권리를 얻었습니다.</p>
 </div>
-</div>
-</div>
-<p>$$</p>
-<p>-\mu \log(-c(x))</p>
-<p>$$</p>
-<div class="highlight"><pre><span></span><code>그러나 $c(x)$가 비선형 함수라면, 비선형 함수를 로그 함수 안에 가두게 되어 자코비안과 헤시안 행렬이 엄청나게 꼬이게 됩니다. $25\text{ms}$ 안에는 도저히 풀 수 없는 끔찍한 연산이 되어버립니다.
-
-대신 IPM 설계자들은 다르게 접근합니다: **&quot;여유 변수 $s$를 $x$의 종속 변수에서 $x$와 동급인 &#39;완전히 독립적인 최적화 변수&#39;로 격상시키자!&quot;**
-
-- **원래 변수**: $x$ (차량 상태, 조향 등)
-- **IPM 변수**: $Z = [x, s, \lambda]^\top$
-
-이제 솔버의 눈에는 $x$와 $s$가 단지 배열 인덱스 `Z[0]`과 `Z[1]`일 뿐입니다. 그들은 완전히 독립적으로 움직일 수 있는 권리를 얻었습니다.
-</code></pre></div>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">2. 선형화의 배신 (선형화 오차) (The Betrayal of Linearization / Linearization Error)</label><label for="__tabbed_2_2">3. L1 페널티의 진정한 역할: 수학적 고무줄 (The True Role of L1 Penalty: A Mathematical Rubber Band)</label></div>
-<div class="tabbed-content">
 <div class="tabbed-block">
 <p>이 두 개의 독립 변수 <span class="arithmatex">\(x\)</span>와 <span class="arithmatex">\(s\)</span>를 가지고, 솔버는 다음 스텝을 위해 뉴턴 방법(Newton's Method)을 사용합니다. 뉴턴 방법은 복잡한 곡선의 세계를 "직선"(접선)으로 무식하게 단순화하여 예측합니다.</p>
 <p>솔버는 연립 방정식을 풀어 독립적인 스텝(<span class="arithmatex">\(\Delta x\)</span>, <span class="arithmatex">\(\Delta s\)</span>)을 계산합니다:</p>
@@ -4807,12 +4800,12 @@
 <div class="tabbed-block">
 <p>요약하자면, <strong>여유 변수 <span class="arithmatex">\(s\)</span>는 본질적으로 제약 조건 <span class="arithmatex">\(c(x)\)</span>에서 태어났지만, 최적화 속도를 높이기 위해 솔버 내부에서는 '독립적인 자유 변수'로 풀려납니다.</strong></p>
 <p>이렇게 풀려난 두 변수(<span class="arithmatex">\(c(x)\)</span>와 <span class="arithmatex">\(s\)</span>)가 선형화 오차로 인해 서로 찢어지려 할 때, 이들을 강제로 묶어주는 <strong>무자비한 수학적 고무줄</strong>이 바로 L1 페널티 항입니다:</p>
+<div class="arithmatex">\[
+w_{L1} |c(x_{\text{new}}) + s_{\text{new}}|
+\]</div>
 </div>
 </div>
 </div>
-<p>$$</p>
-<p>w_{L1} |c(x_{\text{new}}) + s_{\text{new}}|</p>
-<p>$$</p>
 
 
 

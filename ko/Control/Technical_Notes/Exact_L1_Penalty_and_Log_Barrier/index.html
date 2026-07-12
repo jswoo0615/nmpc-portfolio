@@ -4658,19 +4658,17 @@
 <p>부등식 제약 조건을 풀기 위해 IPM 솔버는 가상의 양수 여유 변수(slack variable) <span class="arithmatex">\(s \ge 0\)</span>를 도입하여 제약 조건을 인위적으로 등식 제약 조건으로 변환합니다.</p>
 <div class="admonition math">
 <p class="admonition-title">여유 변수가 포함된 등식 제약 조건 (Equality Constraint with Slack)</p>
+<div class="arithmatex">\[
+c(x) + s = 0
+\]</div>
 </div>
-<p>$$</p>
-<div class="highlight"><pre><span></span><code>c(x) + s = 0
-</code></pre></div>
-<p>$$</p>
 <p>장점 함수에 포함된 L1 페널티 항은 다음과 같습니다:</p>
 <div class="admonition math">
 <p class="admonition-title">L1 페널티 항 (L1 Penalty Term)</p>
+<div class="arithmatex">\[
+w_{L1} |c + s + \alpha ds|
+\]</div>
 </div>
-<p>$$</p>
-<div class="highlight"><pre><span></span><code>w_{L1} |c + s + \alpha ds|
-</code></pre></div>
-<p>$$</p>
 <p>이 절댓값 <span class="arithmatex">\((|\cdot|)\)</span> 항은 제약 조건 위반 여부와 관계없이 <strong>"물리적 현실(<span class="arithmatex">\(c\)</span>)이 솔버의 내부 가상 변수(<span class="arithmatex">\(s\)</span>)와 완벽하게 일치하는가?"</strong>를 검증합니다.</p>
 <ul>
 <li>차량이 완전히 안전하여 장애물에서 5m 떨어져 있더라도 (<span class="arithmatex">\(c = -5\)</span>), 솔버의 내부 여유 변수가 <span class="arithmatex">\(s = 3\)</span>으로 계산되었다면 <span class="arithmatex">\(|-5 + 3| = |-2| = 2\)</span>가 됩니다. 이로 인해 <span class="arithmatex">\(2000 \ (w_{L1} \times 2)\)</span>이라는 막대한 페널티가 발생합니다.</li>
@@ -4680,26 +4678,29 @@
 <p>이 시스템은 절대적인 견고성(robustness)을 달성하기 위해 두 가지 극단적인 메커니즘을 결합합니다.</p>
 <div class="grid cards">
 <ul>
-<li><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.96 11.31C10.82 8.1 11.5 6 13 6s2.18 2.1 3.04 5.31C17 14.92 18.1 19 22 19v-2c-2.2 0-3-2.46-4.03-6.2C17.08 7.46 16.15 4 13 4s-4.08 3.46-4.97 6.8C7.03 14.54 6.2 17 4 17V2H2v20h20v-2H4v-1c3.9 0 5-4.08 5.96-7.69"/></svg></span>
-    <strong>로그 장벽 (Log-Barrier)</strong> (장기적 방향 / 소프트 제약, Soft Constraint)</li>
-</ul>
-<p>$$</p>
-<p>-\mu \log(s + \alpha ds)</p>
-<p>$$</p>
-<div class="highlight"><pre><span></span><code>- **메커니즘**: 내부 여유 변수 $s$가 0에 가까워지면 무한대($\infty$) 페널티를 부과합니다.
-- **목적**: &quot;실행 가능한 영역(feasible region) 내에 머무르기&quot;라는 장기적인 목표를 설정합니다. 경계에 닿지 않고 궤적이 내부($s &gt; 0$)에 안전하게 머물도록 부드럽고도 단호하게 밀어냅니다.
-</code></pre></div>
+<li>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.96 11.31C10.82 8.1 11.5 6 13 6s2.18 2.1 3.04 5.31C17 14.92 18.1 19 22 19v-2c-2.2 0-3-2.46-4.03-6.2C17.08 7.46 16.15 4 13 4s-4.08 3.46-4.97 6.8C7.03 14.54 6.2 17 4 17V2H2v20h20v-2H4v-1c3.9 0 5-4.08 5.96-7.69"/></svg></span>
+    <strong>로그 장벽 (Log-Barrier)</strong> (장기적 방향 / 소프트 제약, Soft Constraint)</p>
+<div class="arithmatex">\[
+-\mu \log(s + \alpha ds)
+\]</div>
 <ul>
-<li><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 19.63 13.43 8.2l-.71-.7 1.42-1.43L12 3.89c1.2-1.19 3.09-1.19 4.27 0l3.6 3.61-1.42 1.41h2.84l.71.71-3.55 3.59-.71-.71V9.62l-1.47 1.42-.71-.71L4.13 21.76z"/></svg></span>
-    <strong>L1 페널티 (L1 Penalty)</strong> (즉각적인 제어 / 하드 제약, Hard Constraint)</li>
+<li><strong>메커니즘</strong>: 내부 여유 변수 <span class="arithmatex">\(s\)</span>가 0에 가까워지면 무한대(<span class="arithmatex">\(\infty\)</span>) 페널티를 부과합니다.</li>
+<li><strong>목적</strong>: "실행 가능한 영역(feasible region) 내에 머무르기"라는 장기적인 목표를 설정합니다. 경계에 닿지 않고 궤적이 내부(<span class="arithmatex">\(s &gt; 0\)</span>)에 안전하게 머물도록 부드럽고도 단호하게 밀어냅니다.</li>
 </ul>
-<p>$$</p>
-<p>w_{L1} |c + s + \alpha ds|</p>
-<p>$$</p>
-<p>(여기서 <span class="arithmatex">\(w_{L1} = 1000.0\)</span>)</p>
-<div class="highlight"><pre><span></span><code>- **메커니즘**: 물리적 현실($c$)과 내부 변수($s$)의 합이 0에서 벗어나는 순간 엄청난 선형 페널티를 즉시 적용합니다.
-- **목적**: 솔버가 성능 향상(비용 함수 감소)에 눈이 멀어 라인 서치 중에 제약 조건을 무시하는 스텝($\alpha$)을 밟으려 할 때, 이 항이 무자비한 가중치로 `merit` 값을 폭발시켜 **해당 스텝을 즉각적으로 거부하는 물리적 브레이크** 역할을 합니다.
-</code></pre></div>
+</li>
+<li>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 19.63 13.43 8.2l-.71-.7 1.42-1.43L12 3.89c1.2-1.19 3.09-1.19 4.27 0l3.6 3.61-1.42 1.41h2.84l.71.71-3.55 3.59-.71-.71V9.62l-1.47 1.42-.71-.71L4.13 21.76z"/></svg></span>
+    <strong>L1 페널티 (L1 Penalty)</strong> (즉각적인 제어 / 하드 제약, Hard Constraint)</p>
+<div class="arithmatex">\[
+w_{L1} |c + s + \alpha ds|
+\]</div>
+<ul>
+<li><strong>메커니즘</strong>: 물리적 현실(<span class="arithmatex">\(c\)</span>)과 내부 변수(<span class="arithmatex">\(s\)</span>)의 합이 0에서 벗어나는 순간 엄청난 선형 페널티를 즉시 적용합니다.</li>
+<li><strong>목적</strong>: 솔버가 성능 향상(비용 함수 감소)에 눈이 멀어 라인 서치 중에 제약 조건을 무시하는 스텝(<span class="arithmatex">\(\alpha\)</span>)을 밟으려 할 때, 이 항이 무자비한 가중치로 <code>merit</code> 값을 폭발시켜 <strong>해당 스텝을 즉각적으로 거부하는 물리적 브레이크</strong> 역할을 합니다.</li>
+</ul>
+</li>
+</ul>
 </div>
 <h2 id="exact"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m23 12-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68zm-13 5-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9z"/></svg></span> 왜 "정확한(Exact)" 가중치인가?</h2>
 <div class="admonition success">

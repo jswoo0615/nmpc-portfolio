@@ -4810,10 +4810,10 @@
 <hr />
 <h2 id="1-state-and-input-definitions">1. 상태 및 입력 정의 (State and Input Definitions)</h2>
 <p>차량 상태 <span class="arithmatex">\(x \in \mathbb{R}^8\)</span> 와 제어 입력 <span class="arithmatex">\(u \in \mathbb{R}^2\)</span> 은 다음과 같이 정의됩니다:</p>
-<p>$$</p>
-<p>x = \begin{bmatrix} s \ d \ \mu \ v_x \ v_y \ r \ \alpha_f \ \alpha_r \end{bmatrix}, \quad
-u = \begin{bmatrix} \delta \ a_{cmd} \end{bmatrix}</p>
-<p>$$</p>
+<div class="arithmatex">\[
+x = \begin{bmatrix} s \\ d \\ \mu \\ v_x \\ v_y \\ r \\ \alpha_f \\ \alpha_r \end{bmatrix}, \quad
+u = \begin{bmatrix} \delta \\ a_{cmd} \end{bmatrix}
+\]</div>
 <table>
 <thead>
 <tr>
@@ -4881,91 +4881,91 @@ u = \begin{bmatrix} \delta \ a_{cmd} \end{bmatrix}</p>
 <h3 id="21-quasi-static-load-transfer">2.1 준정적 하중 이동 (Quasi-Static Load Transfer, 실시간 모델)</h3>
 <p>NMPC 루프의 계산 부담을 최소화하기 위해, <code>RealTimeDynamicsModel</code>은 독립적인 롤(roll) 및 피치(pitch) 적분기 없이 하중 이동을 계산하기 위해 횡방향 가속도의 정적 근사치(<span class="arithmatex">\(a_y \approx v_x \cdot r\)</span>)를 사용합니다.</p>
 <p><strong>정적 무게 배분 (Static Weight Distribution):</strong></p>
-<p>$$</p>
-<p>F_{z,f}^{stat} = m g \frac{l_r}{L}, \quad F_{z,r}^{stat} = m g \frac{l_f}{L}</p>
-<p>$$</p>
+<div class="arithmatex">\[
+F_{z,f}^{stat} = m g \frac{l_r}{L}, \quad F_{z,r}^{stat} = m g \frac{l_f}{L}
+\]</div>
 <p><strong>종방향 하중 이동 (Longitudinal Load Transfer):</strong></p>
-<p>$$</p>
-<p>\Delta F_z^{long} = m a_{cmd} \frac{h_{cg}}{L}</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\Delta F_z^{long} = m a_{cmd} \frac{h_{cg}}{L}
+\]</div>
 <p><strong>횡방향 하중 이동 (Lateral Load Transfer, 전/후륜):</strong></p>
-<p>$$</p>
-<p>\Delta F_{z,lat}^{front} = m (v_x r) \frac{h_{cg}}{t_f} K_{df}</p>
-<p>$$</p>
-<p>$$</p>
-<p>\Delta F_{z,lat}^{rear} = m (v_x r) \frac{h_{cg}}{t_r} (1 - K_{df})</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\Delta F_{z,lat}^{front} = m (v_x r) \frac{h_{cg}}{t_f} K_{df}
+\]</div>
+<div class="arithmatex">\[
+\Delta F_{z,lat}^{rear} = m (v_x r) \frac{h_{cg}}{t_r} (1 - K_{df})
+\]</div>
 <p>여기서 <span class="arithmatex">\(K_{df}\)</span>는 전륜 롤 강성 분배 비율(front roll stiffness distribution ratio)이며, <span class="arithmatex">\(t_f, t_r\)</span>은 윤거(track widths)입니다.</p>
 <h3 id="22-suspension-geometric-load-transfer">2.2 서스펜션 기하학적 하중 이동 (Suspension Geometric Load Transfer, 고정밀 모델)</h3>
 <p><code>HighFidelityDynamicsModel</code>은 롤 센터 높이와 서스펜션 스프링 강성을 모델링하여 섀시 롤(<span class="arithmatex">\(\phi\)</span>)과 피치(<span class="arithmatex">\(\theta\)</span>)를 능동적으로 계산합니다.</p>
-<p>$$</p>
-<p>\theta = \frac{m a_{cmd} h_{cg}}{K_{pitch}}</p>
-<p>$$</p>
-<p>$$</p>
-<p>\phi = \frac{m (v_x r) h_{roll_arm}}{K_{roll} - m g h_{roll_arm}}</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\theta = \frac{m a_{cmd} h_{cg}}{K_{pitch}}
+\]</div>
+<div class="arithmatex">\[
+\phi = \frac{m (v_x r) h_{roll\_arm}}{K_{roll} - m g h_{roll\_arm}}
+\]</div>
 <p>이러한 각도는 정확한 동적 휠 하중 및 해당 캠버 추력(camber thrust) 효과를 계산하는 데 사용됩니다.</p>
 <hr />
 <h2 id="3-tire-physics-magic-formula">3. 타이어 물리 &amp; 매직 포뮬러 (Tire Physics &amp; Magic Formula)</h2>
 <h3 id="31-steady-state-slip-angle-calculation">3.1 정상 상태 슬립각 계산 (Steady-State Slip Angle calculation)</h3>
 <p>정상 상태 기구학적 슬립각은 전륜 및 후륜 차축의 속도를 사용하여 계산됩니다:</p>
-<p>$$</p>
-<p>\alpha_{ss,f} = \delta - \arctan\left(\frac{v_y + l_f r}{v_x}\right)</p>
-<p>$$</p>
-<p>$$</p>
-<p>\alpha_{ss,r} = - \arctan\left(\frac{v_y - l_r r}{v_x}\right)</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\alpha_{ss,f} = \delta - \arctan\left(\frac{v_y + l_f r}{v_x}\right)
+\]</div>
+<div class="arithmatex">\[
+\alpha_{ss,r} = - \arctan\left(\frac{v_y - l_r r}{v_x}\right)
+\]</div>
 <h3 id="32-1-relaxation-length-first-order-delay">3.2 이완 길이 / 1차 지연 (Relaxation Length / First-Order Delay)</h3>
 <p>타이어 힘은 즉각적으로 발생하지 않습니다. 수치적 불안정성을 방지하고 실제 고속 동역학을 모델링하기 위해 이완 길이(<span class="arithmatex">\(\sigma\)</span>)가 도입됩니다:</p>
-<p>$$</p>
-<p>\dot{\alpha}<em ss_f="ss,f">f = \frac{v_x}{\sigma_f} (\alpha</em> - \alpha_f)</p>
-<p>$$</p>
-<p>$$</p>
-<p>\dot{\alpha}<em ss_r="ss,r">r = \frac{v_x}{\sigma_r} (\alpha</em> - \alpha_r)</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\dot{\alpha}_f = \frac{v_x}{\sigma_f} (\alpha_{ss,f} - \alpha_f)
+\]</div>
+<div class="arithmatex">\[
+\dot{\alpha}_r = \frac{v_x}{\sigma_r} (\alpha_{ss,r} - \alpha_r)
+\]</div>
 <h3 id="33-pacejka-magic-formula">3.3 Pacejka Magic Formula</h3>
 <p>비선형 횡력 <span class="arithmatex">\(F_y\)</span>는 하중에 종속적인 Pacejka Magic Formula를 사용하여 계산됩니다.</p>
 <p><strong>마찰 계수 감소 (Friction Coefficient Decay):</strong></p>
-<p>$$</p>
-<p>\mu = \mu_0 - d\mu (F_z - F_{z,nom})</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\mu = \mu_0 - d\mu (F_z - F_{z,nom})
+\]</div>
 <p><strong>코너링 강성 (Cornering Stiffness):</strong></p>
-<p>$$</p>
-<p>C_\alpha = c_1 F_z - c_2 F_z^2</p>
-<p>$$</p>
+<div class="arithmatex">\[
+C_\alpha = c_1 F_z - c_2 F_z^2
+\]</div>
 <p><strong>횡력 계산 (Lateral Force Calculation):</strong></p>
-<p>$$</p>
-<p>D = \mu F_z, \quad B = \frac{C_\alpha}{C_{shape} D}</p>
-<p>$$</p>
-<p>$$</p>
-<p>F_y = D \sin(C_{shape} \arctan(B \alpha))</p>
-<p>$$</p>
+<div class="arithmatex">\[
+D = \mu F_z, \quad B = \frac{C_\alpha}{C_{shape} D}
+\]</div>
+<div class="arithmatex">\[
+F_y = D \sin(C_{shape} \arctan(B \alpha))
+\]</div>
 <p><em>(C++ 구현에서는 배정밀도(double precision) 연산 시 <code>FastMath.hpp</code>를 통해 표준 <code>sin</code> 및 <code>atan</code>이 고속 LUT 연산으로 대체되어 실시간 적분을 가속화합니다.)</em></p>
 <hr />
 <h2 id="4-frenet-frenet-kinematics-and-equations-of-motion">4. Frenet 기구학 및 운동 방정식 (Frenet Kinematics and Equations of Motion)</h2>
 <p>마지막으로 힘을 결합하여 상태 미분을 구합니다.</p>
 <p><span class="arithmatex">\(\kappa\)</span>를 차량 위치의 도로 곡률(road curvature)이라고 합시다.</p>
 <h3 id="41-kinematics">4.1 기구학 (경로 추종, Kinematics)</h3>
-<p>$$</p>
-<p>\dot{s} = \frac{v_x \cos(\mu) - v_y \sin(\mu)}{1 - d \cdot \kappa}</p>
-<p>$$</p>
-<p>$$</p>
-<p>\dot{d} = v_x \sin(\mu) + v_y \cos(\mu)</p>
-<p>$$</p>
-<p>$$</p>
-<p>\dot{\mu} = r - \kappa \cdot \dot{s}</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\dot{s} = \frac{v_x \cos(\mu) - v_y \sin(\mu)}{1 - d \cdot \kappa}
+\]</div>
+<div class="arithmatex">\[
+\dot{d} = v_x \sin(\mu) + v_y \cos(\mu)
+\]</div>
+<div class="arithmatex">\[
+\dot{\mu} = r - \kappa \cdot \dot{s}
+\]</div>
 <p><em>(엄격하게 후진하거나 경로 위에 완벽하게 있을 때의 특이점(singularities)을 피하기 위해 분모 <span class="arithmatex">\((1 - d \cdot \kappa)\)</span>는 안전하게 제한됩니다.)</em></p>
 <h3 id="42-dynamics">4.2 동역학 (차체 가속도, Dynamics)</h3>
-<p>$$</p>
-<p>\dot{v}<em cmd="cmd">x = a</em> + r \cdot v_y} - \frac{F_{drag}}{m</p>
-<p>$$</p>
-<p>$$</p>
-<p>\dot{v}<em y_f="y,f">y = \frac{F</em> - r \cdot v_x} \cos(\delta) + F_{y,r}}{m</p>
-<p>$$</p>
-<p>$$</p>
-<p>\dot{r} = \frac{l_f F_{y,f} \cos(\delta) - l_r F_{y,r}}{I_z}</p>
-<p>$$</p>
+<div class="arithmatex">\[
+\dot{v}_x = a_{cmd} - \frac{F_{drag}}{m} + r \cdot v_y
+\]</div>
+<div class="arithmatex">\[
+\dot{v}_y = \frac{F_{y,f} \cos(\delta) + F_{y,r}}{m} - r \cdot v_x
+\]</div>
+<div class="arithmatex">\[
+\dot{r} = \frac{l_f F_{y,f} \cos(\delta) - l_r F_{y,r}}{I_z}
+\]</div>
 <p>이 방정식들은 본질적으로 <span class="arithmatex">\(\dot{x} = f(x, u)\)</span> 벡터를 형성하며, 이는 <code>SparseNMPC_IPM</code> 솔버 내부의 Runge-Kutta 4 (RK4) 적분기로 공급됩니다.</p>
 
 

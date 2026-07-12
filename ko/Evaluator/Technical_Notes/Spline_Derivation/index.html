@@ -4834,19 +4834,19 @@
 <p>각 구간 <span class="arithmatex">\([x_{i}, x_{i+1}]\)</span>에서 스플라인 함수는 이산적으로 3차 다항식으로 정의되며, 시작점 <span class="arithmatex">\(x_{i}\)</span>를 로컬 좌표계의 원점으로 삼습니다:</p>
 <div class="admonition math">
 <p class="admonition-title">다항식 정의 (Polynomial Definition)</p>
+<div class="arithmatex">\[
+S_{i}(x) = a_{i} + b_{i}(x - x_{i}) + c_{i}(x - x_{i})^{2} + d_{i}(x - x_{i})^{3}
+\]</div>
 </div>
-<p>$$</p>
-<p>S_{i}(x) = a_{i} + b_{i}(x - x_{i}) + c_{i}(x - x_{i})^{2} + d_{i}(x - x_{i})^{3}</p>
-<p>$$</p>
 <p>계수 <span class="arithmatex">\(a_{i}, b_{i}, c_{i}, d_{i}\)</span>는 다음 연속성 및 경계 조건을 만족하도록 계산됩니다:</p>
 <ul>
 <li><strong>초기 조건 (Initial Condition)</strong>: <span class="arithmatex">\(a_{i} = y_{i}\)</span> (각 구간 시작점의 함수값)</li>
 <li><strong>구간 간격 (Interval Spacing)</strong>: <span class="arithmatex">\(h_{i} = x_{i+1} - x_{i}\)</span></li>
 <li><strong>자연 스플라인 경계 조건 (Natural Spline Boundary Condition)</strong>: 양 끝점에서의 곡률(2차 미분)은 0으로 가정합니다:</li>
 </ul>
-<p>$$</p>
-<p>S_{0}^{\prime \prime}(x_{0}) = 0, \quad S_{n-1}^{\prime \prime}(x_{n}) = 0</p>
-<p>$$</p>
+<p>$$
+  S_{0}^{\prime \prime}(x_{0}) = 0, \quad S_{n-1}^{\prime \prime}(x_{n}) = 0
+  $$</p>
 <h3 id="11-derivative-expansion">1.1. 미분 전개 (Derivative Expansion)</h3>
 <p>다항식을 미분하여 1차 및 2차 미분값을 유도합니다:</p>
 <ul>
@@ -4857,23 +4857,25 @@
 <p>차량 동역학 제어와 같은 2D 공간에서는 누적된 호의 길이(arc length) 파라미터 <span class="arithmatex">\(s\)</span>를 기반으로 <span class="arithmatex">\(X\)</span> 및 <span class="arithmatex">\(Y\)</span> 좌표가 독립적인 1D 스플라인으로 보간됩니다.</p>
 <div class="grid cards">
 <ul>
-<li><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 15a3 3 0 0 1 3 3 3 3 0 0 1-3 3 2.99 2.99 0 0 1-2.83-2H14v-2h1.17c.41-1.17 1.52-2 2.83-2m0 2a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1m0-9a1.43 1.43 0 0 0 1.43-1.43 1.43 1.43 0 1 0-2.86 0A1.43 1.43 0 0 0 18 8m0-5.43a4 4 0 0 1 4 4C22 9.56 18 14 18 14s-4-4.44-4-7.43a4 4 0 0 1 4-4M8.83 17H10v2H8.83A2.99 2.99 0 0 1 6 21a3 3 0 0 1-3-3c0-1.31.83-2.42 2-2.83V14h2v1.17c.85.3 1.53.98 1.83 1.83M6 17a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1M6 3a3 3 0 0 1 3 3c0 1.31-.83 2.42-2 2.83V10H5V8.83A2.99 2.99 0 0 1 3 6a3 3 0 0 1 3-3m0 2a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1m5 14v-2h2v2zm-4-6H5v-2h2z"/></svg></span> <strong>위치 보간 (Position Interpolation)</strong></li>
+<li>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 15a3 3 0 0 1 3 3 3 3 0 0 1-3 3 2.99 2.99 0 0 1-2.83-2H14v-2h1.17c.41-1.17 1.52-2 2.83-2m0 2a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1m0-9a1.43 1.43 0 0 0 1.43-1.43 1.43 1.43 0 1 0-2.86 0A1.43 1.43 0 0 0 18 8m0-5.43a4 4 0 0 1 4 4C22 9.56 18 14 18 14s-4-4.44-4-7.43a4 4 0 0 1 4-4M8.83 17H10v2H8.83A2.99 2.99 0 0 1 6 21a3 3 0 0 1-3-3c0-1.31.83-2.42 2-2.83V14h2v1.17c.85.3 1.53.98 1.83 1.83M6 17a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1M6 3a3 3 0 0 1 3 3c0 1.31-.83 2.42-2 2.83V10H5V8.83A2.99 2.99 0 0 1 3 6a3 3 0 0 1 3-3m0 2a1 1 0 0 0-1 1 1 1 0 0 0 1 1 1 1 0 0 0 1-1 1 1 0 0 0-1-1m5 14v-2h2v2zm-4-6H5v-2h2z"/></svg></span> <strong>위치 보간 (Position Interpolation)</strong></p>
+<div class="arithmatex">\[
+X(s) = S_{x}(s), \quad Y(s) = S_{y}(s)
+\]</div>
+</li>
+<li>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m7 17 3.2-6.8L17 7l-3.2 6.8zm5-5.9a.9.9 0 0 0-.9.9.9.9 0 0 0 .9.9.9.9 0 0 0 .9-.9.9.9 0 0 0-.9-.9M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2m0 2a8 8 0 0 0-8 8 8 8 0 0 0 8 8 8 8 0 0 0 8-8 8 8 0 0 0-8-8"/></svg></span> <strong>헤딩(Yaw) 유도 (Heading Derivation)</strong></p>
+<div class="arithmatex">\[
+\theta (s) = \text{arctan2}\left(\frac{dY}{ds}, \frac{dX}{ds}\right)
+\]</div>
+</li>
+<li>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 19.92c1.8-.22 3.35-.97 4.65-2.27S19.7 14.8 19.92 13h-3c-.22 1-.68 1.84-1.38 2.54S14 16.7 13 16.92zM10 8h4l3 3h2.92c-.25-1.95-1.13-3.62-2.65-5C15.76 4.66 14 4 12 4s-3.76.66-5.27 2c-1.52 1.38-2.4 3.05-2.65 5H7zm1 11.92v-3c-1-.22-1.84-.68-2.54-1.38S7.3 14 7.08 13h-3c.22 1.77.97 3.3 2.27 4.6S9.2 19.67 11 19.92M12 2c2.75 0 5.1 1 7.05 2.95S22 9.25 22 12s-1 5.1-2.95 7.05S14.75 22 12 22s-5.1-1-7.05-2.95S2 14.75 2 12s1-5.1 2.95-7.05S9.25 2 12 2"/></svg></span> <strong>곡률 유도 (Curvature Derivation)</strong></p>
+<div class="arithmatex">\[
+\kappa(s) = \frac{\frac{d^{2}Y}{ds^{2}}\frac{dX}{ds} - \frac{d^{2}X}{ds^{2}}\frac{dY}{ds}}{\left(\left(\frac{dX}{ds}\right)^{2} + \left(\frac{dY}{ds}\right)^{2}\right)^{3/2}}
+\]</div>
+</li>
 </ul>
-<p>$$</p>
-<p>X(s) = S_{x}(s), \quad Y(s) = S_{y}(s)</p>
-<p>$$</p>
-<ul>
-<li><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m7 17 3.2-6.8L17 7l-3.2 6.8zm5-5.9a.9.9 0 0 0-.9.9.9.9 0 0 0 .9.9.9.9 0 0 0 .9-.9.9.9 0 0 0-.9-.9M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2m0 2a8 8 0 0 0-8 8 8 8 0 0 0 8 8 8 8 0 0 0 8-8 8 8 0 0 0-8-8"/></svg></span> <strong>헤딩(Yaw) 유도 (Heading Derivation)</strong></li>
-</ul>
-<p>$$</p>
-<p>\theta (s) = \text{arctan2}\left(\frac{dY}{ds}, \frac{dX}{ds}\right)</p>
-<p>$$</p>
-<ul>
-<li><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 19.92c1.8-.22 3.35-.97 4.65-2.27S19.7 14.8 19.92 13h-3c-.22 1-.68 1.84-1.38 2.54S14 16.7 13 16.92zM10 8h4l3 3h2.92c-.25-1.95-1.13-3.62-2.65-5C15.76 4.66 14 4 12 4s-3.76.66-5.27 2c-1.52 1.38-2.4 3.05-2.65 5H7zm1 11.92v-3c-1-.22-1.84-.68-2.54-1.38S7.3 14 7.08 13h-3c.22 1.77.97 3.3 2.27 4.6S9.2 19.67 11 19.92M12 2c2.75 0 5.1 1 7.05 2.95S22 9.25 22 12s-1 5.1-2.95 7.05S14.75 22 12 22s-5.1-1-7.05-2.95S2 14.75 2 12s1-5.1 2.95-7.05S9.25 2 12 2"/></svg></span> <strong>곡률 유도 (Curvature Derivation)</strong></li>
-</ul>
-<p>$$</p>
-<p>\kappa(s) = \frac{\frac{d^{2}Y}{ds^{2}}\frac{dX}{ds} - \frac{d^{2}X}{ds^{2}}\frac{dY}{ds}}{\left(\left(\frac{dX}{ds}\right)^{2} + \left(\frac{dY}{ds}\right)^{2}\right)^{3/2}}</p>
-<p>$$</p>
 </div>
 <h2 id="3-core-coefficient-derivation-tridiagonal-matrix"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 10.5a1.5 1.5 0 0 1-1.5 1.5c.84 0 1.5.67 1.5 1.5V15c0 1.11-.89 2-2 2H9v-2h4v-2h-2v-2h2V9H9V7h4c1.11 0 2 .89 2 2m4-6H5c-1.09 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2"/></svg></span> 3. 핵심 계수 유도 및 삼중 대각 행렬 (Core Coefficient Derivation &amp; Tridiagonal Matrix)</h2>
 <p>스플라인 보간법의 핵심은 <strong>모든 구간이 경계점 <span class="arithmatex">\(x_{i+1}\)</span>에서 부드럽게 연결되어야 한다</strong>는 제약 조건을 통해 <span class="arithmatex">\(c_{i}\)</span>를 풀기 위한 연립 방정식을 세우는 것입니다.</p>
@@ -4885,7 +4887,7 @@
 </ul>
 <p>따라서 연속성 조건은 다음과 같이 요약됩니다: "동일한 글로벌 노드 <span class="arithmatex">\(x_{i+1}\)</span>에서 왼쪽 곡선 <span class="arithmatex">\(S_{i}\)</span>의 끝 상태와 오른쪽 곡선 <span class="arithmatex">\(S_{i+1}\)</span>의 시작 상태가 일치해야 합니다."</p>
 <h3 id="32-system-of-equations-via-derivative-continuity">3.2. 미분 연속성을 통한 연립 방정식 (System of Equations via Derivative Continuity)</h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">1단계. 2차 미분 연속성 (Step 1. Second Derivative Continuity)</label><label for="__tabbed_1_2">2단계. 함수값 연속성 (Step 2. Function Value Continuity)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">1단계. 2차 미분 연속성 (Step 1. Second Derivative Continuity)</label><label for="__tabbed_1_2">2단계. 함수값 연속성 (Step 2. Function Value Continuity)</label><label for="__tabbed_1_3">3단계. 1차 미분 연속성 및 <span class="arithmatex">\(\alpha\)</span> 유도 (Step 3. First Derivative Continuity &amp; Deriving <span class="arithmatex">\(\alpha\)</span>)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <ul>
@@ -4899,33 +4901,29 @@
 <li><span class="arithmatex">\(S_{i}(x_{i+1}) = a_{i} + b_{i}h_{i} + c_{i}h_{i}^{2} + d_{i}h_{i}^{3} = a_{i+1}\)</span></li>
 <li><span class="arithmatex">\(b_{i}\)</span>에 대해 정리하면 (1단계에서 구한 <span class="arithmatex">\(d_{i}\)</span> 대입):</li>
 </ul>
+<p>$$
+  b_{i} = \frac{a_{i+1} - a_{i}}{h_{i}} - \frac{h_{i}}{3}(c_{i+1} + 2c_{i})
+  $$</p>
 </div>
-</div>
-</div>
-<p>$$</p>
-<p>b_{i} = \frac{a_{i+1} - a_{i}}{h_{i}} - \frac{h_{i}}{3}(c_{i+1} + 2c_{i})</p>
-<p>$$</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">3단계. 1차 미분 연속성 및 <span class="arithmatex">\(\alpha\)</span> 유도 (Step 3. First Derivative Continuity &amp; Deriving <span class="arithmatex">\(\alpha\)</span>)</label></div>
-<div class="tabbed-content">
 <div class="tabbed-block">
 <ul>
 <li><span class="arithmatex">\(S_{i}^{\prime}(x_{i+1}) = b_{i} + 2c_{i}h_{i} + 3d_{i}h_{i}^{2} = b_{i+1}\)</span></li>
 <li>1단계와 2단계에서 얻은 <span class="arithmatex">\(b_{i}, b_{i+1}, d_{i}\)</span>를 이 방정식에 대입하고 <span class="arithmatex">\(c\)</span>에 대해 내림차순으로 정리하면 다음과 같은 핵심 관계식이 유도됩니다:</li>
 </ul>
+<p>$$
+  h_{i-1}c_{i-1} + 2(h_{i-1} + h_{i})c_{i} + h_{i}c_{i+1} = \frac{3}{h_{i}}(a_{i+1} - a_{i}) - \frac{3}{h_{i-1}}(a_{i} - a_{i-1})
+  $$</p>
 </div>
 </div>
 </div>
-<p>$$</p>
-<p>h_{i-1}c_{i-1} + 2(h_{i-1} + h_{i})c_{i} + h_{i}c_{i+1} = \frac{3}{h_{i}}(a_{i+1} - a_{i}) - \frac{3}{h_{i-1}}(a_{i} - a_{i-1})</p>
-<p>$$</p>
 <h3 id="33-alpha-definition-and-meaning-of-the-auxiliary-term-alpha">3.3. 보조 항 <span class="arithmatex">\(\alpha\)</span>의 정의 및 의미 (Definition and Meaning of the Auxiliary Term <span class="arithmatex">\(\alpha\)</span>)</h3>
 <p>방정식의 우변을 <span class="arithmatex">\(\alpha_{i}\)</span>로 정의합니다:</p>
 <div class="admonition math">
 <p class="admonition-title">알파 정의 (Alpha Definition)</p>
+<div class="arithmatex">\[
+\alpha_{i} = \frac{3}{h_{i}}(a_{i+1} - a_{i}) - \frac{3}{h_{i-1}}(a_{i} - a_{i-1})
+\]</div>
 </div>
-<p>$$</p>
-<p>\alpha_{i} = \frac{3}{h_{i}}(a_{i+1} - a_{i}) - \frac{3}{h_{i-1}}(a_{i} - a_{i-1})</p>
-<p>$$</p>
 <p><strong>물리적 의미:</strong>
 <span class="arithmatex">\(\frac{a_{i+1} - a_{i}}{h_{i}}\)</span>는 오른쪽 구간의 평균 기울기이고, <span class="arithmatex">\(\frac{a_{i} - a_{i-1}}{h_{i-1}}\)</span>는 왼쪽 구간의 평균 기울기입니다. 즉, <span class="arithmatex">\(\alpha_{i}\)</span>는 <strong>두 구간 간의 기울기 변화 차이</strong>를 스케일링한 값으로, 해당 노드에서 스플라인이 요구하는 '곡률(구부러짐)' 정도를 정량화합니다.</p>
 <p>이로써 <span class="arithmatex">\(c_{i}\)</span>를 미지수로 하는 <span class="arithmatex">\(N \times N\)</span> 삼중 대각 행렬(Tridiagonal Matrix) 시스템이 완성됩니다. 이는 Thomas 알고리즘(전진 소거 및 후진 대입)을 통해 <span class="arithmatex">\(\mathcal{O}(N)\)</span> 시간 복잡도로 결정론적 연산을 가능하게 합니다.</p>
@@ -4952,16 +4950,16 @@
 <ol>
 <li><span class="arithmatex">\(c_{2} = -6 - 4c_{1}\)</span>을 두 번째 방정식에 대입:</li>
 </ol>
-<p>$$</p>
-<p>c_{1} + 4(-6 - 4c_{1}) = 6 \implies c_{1} - 24 - 16c_{1} = 6 \implies -15c_{1} = 30 \implies c_{1} = -2</p>
-<p>$$</p>
+<p>$$
+   c_{1} + 4(-6 - 4c_{1}) = 6 \implies c_{1} - 24 - 16c_{1} = 6 \implies -15c_{1} = 30 \implies c_{1} = -2
+   $$</p>
 <ol>
 <li><span class="arithmatex">\(c_{2} = -6 - 4(-2) = 2\)</span></li>
 <li>결과: <span class="arithmatex">\(c_{0} = 0, c_{1} = -2, c_{2} = 2, c_{3} = 0\)</span></li>
 </ol>
 <h3 id="43-b_i-d_i-calculation-of-remaining-coefficients">4.3. 나머지 계수(<span class="arithmatex">\(b_{i}, d_{i}\)</span>) 계산 (Calculation of Remaining Coefficients)</h3>
 <p>공식 사용: <span class="arithmatex">\(b_{i} = \frac{a_{i+1} - a_{i}}{h_{i}} - \frac{h_{i}}{3}(c_{i+1} + 2c_{i}), \quad d_{i} = \frac{c_{i+1} - c_{i}}{3h_{i}}\)</span></p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">구간 0 (Interval 0): <span class="arithmatex">\([0, 1]\)</span></label><label for="__tabbed_3_2">구간 1 (Interval 1): <span class="arithmatex">\([1, 2]\)</span></label><label for="__tabbed_3_3">구간 2 (Interval 2): <span class="arithmatex">\([2, 3]\)</span></label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">구간 0 (Interval 0): <span class="arithmatex">\([0, 1]\)</span></label><label for="__tabbed_2_2">구간 1 (Interval 1): <span class="arithmatex">\([1, 2]\)</span></label><label for="__tabbed_2_3">구간 2 (Interval 2): <span class="arithmatex">\([2, 3]\)</span></label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <ul>
