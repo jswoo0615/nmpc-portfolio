@@ -4576,7 +4576,7 @@
 <h2 id="design-philosophy"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m10 17-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9m-6-8L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z"/></svg></span> Design Philosophy</h2>
 <ol>
 <li><strong>Deterministic Resolution</strong>: The optimal control sequence must be calculated within strict real-time deadlines (e.g., &lt; 10ms for vehicles). All algorithms here are strictly bounded (e.g., maximum iterations limit, line search limit).</li>
-<li><strong>Zero-Allocation Data Paths</strong>: The Riccati recursion processes the trajectory backwards and forwards entirely through stack memory structures defined in <code>include/Optimization/Matrix/Core</code>.</li>
+<li><strong>Zero-Allocation Data Paths</strong>: The Riccati recursion processes the trajectory backwards and forwards entirely through stack memory structures defined in <code>include/nmpc/Matrix/Core</code>.</li>
 <li><strong>Safety &amp; Fallback First</strong>: Optimal control theory provides theoretical guarantees, but real-world physics breaks them. The solver incorporates a <code>KKTMonitor</code> and <code>FallbackControl</code> to instantly inject fail-safe logic (e.g., emergency braking) when it detects numerical collapse or infeasibility.</li>
 </ol>
 <h2 id="core-components"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h6v4H3zm12 7h6v4h-6zm0 7h6v4h-6zm-2-4H7v5h6v2H5V9h2v2h6z"/></svg></span> Core Components</h2>

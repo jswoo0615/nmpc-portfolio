@@ -4834,15 +4834,15 @@ The solver is written as a header-only C++ class template, allowing it to be ins
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Dependencies</label><label for="__tabbed_1_2">Descriptions</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Control/SafeBuffer.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Matrix/AD/DualVec.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Matrix/Core/MathTraits.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Matrix/Core/StaticMatrix.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Simulation/Integrator.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Solver/KKTMonitor.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Solver/MeritLineSearch.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Solver/RiccatiSolver.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Optimization/Dynamics/RealTimeDynamicsModel.hpp&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Control/SafeBuffer.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Matrix/AD/DualVec.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Matrix/Core/MathTraits.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Matrix/Core/StaticMatrix.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Simulation/Integrator.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Solver/KKTMonitor.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Solver/MeritLineSearch.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Solver/RiccatiSolver.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;nmpc/Dynamics/RealTimeDynamicsModel.hpp&quot;</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -4859,7 +4859,7 @@ The solver is written as a header-only C++ class template, allowing it to be ins
 </div>
 </div>
 </div>
-<p><em>The main class is located inside <code>namespace Optimization::controller</code>.</em></p>
+<p><em>The main class is located inside <code>namespace nmpc::controller</code>.</em></p>
 <h2 id="helper-data-structures"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4M4 9v3c0 2.21 3.58 4 8 4s8-1.79 8-4V9c0 2.21-3.58 4-8 4s-8-1.79-8-4m0 5v3c0 2.21 3.58 4 8 4s8-1.79 8-4v-3c0 2.21-3.58 4-8 4s-8-1.79-8-4"/></svg></span> Helper Data Structures</h2>
 <h3 id="obstaclefrenet">ObstacleFrenet</h3>
 <p>Holds a Frenet-like description of an obstacle. The solver assumes at most 10 obstacles.

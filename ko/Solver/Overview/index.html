@@ -4576,7 +4576,7 @@
 <h2 id="design-philosophy"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m10 17-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9m-6-8L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z"/></svg></span> 설계 철학 (Design Philosophy)</h2>
 <ol>
 <li><strong>결정론적 풀이 (Deterministic Resolution)</strong>: 최적의 제어 시퀀스는 엄격한 실시간 데드라인(예: 차량의 경우 &lt; 10ms) 내에 계산되어야 합니다. 여기에 있는 모든 알고리즘은 엄격하게 제한되어 있습니다(예: 최대 반복 횟수 제한, 라인 서치 제한).</li>
-<li><strong>동적 할당 제로 데이터 경로 (Zero-Allocation Data Paths)</strong>: 리카티 재귀는 <code>include/Optimization/Matrix/Core</code>에 정의된 스택 메모리 구조만을 통해 궤적을 앞뒤로 완전히 처리합니다.</li>
+<li><strong>동적 할당 제로 데이터 경로 (Zero-Allocation Data Paths)</strong>: 리카티 재귀는 <code>include/nmpc/Matrix/Core</code>에 정의된 스택 메모리 구조만을 통해 궤적을 앞뒤로 완전히 처리합니다.</li>
 <li><strong>안전 및 폴백 우선 (Safety &amp; Fallback First)</strong>: 최적 제어 이론은 이론적인 보장을 제공하지만, 현실 세계의 물리는 이를 깨뜨립니다. 솔버에는 수치적 붕괴(numerical collapse)나 실행 불가능(infeasibility) 상태를 감지했을 때 즉각적으로 페일 세이프 로직(fail-safe logic, 예: 비상 제동)을 주입하는 <code>KKTMonitor</code>와 <code>FallbackControl</code>이 통합되어 있습니다.</li>
 </ol>
 <h2 id="core-components"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h6v4H3zm12 7h6v4h-6zm0 7h6v4h-6zm-2-4H7v5h6v2H5V9h2v2h6z"/></svg></span> 핵심 구성 요소 (Core Components)</h2>
