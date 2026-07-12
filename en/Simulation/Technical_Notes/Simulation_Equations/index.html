@@ -4632,9 +4632,13 @@
 <hr />
 <h2 id="1-the-discretization-problem">1. The Discretization Problem</h2>
 <p>The vehicle or dynamic system (Plant) is defined by a continuous-time Ordinary Differential Equation (ODE):</p>
-<div class="arithmatex">\[ \dot{x}(t) = f(x(t), u(t)) \]</div>
+<p>$$</p>
+<p>\dot{x}(t) = f(x(t), u(t)) </p>
+<p>$$</p>
 <p>To implement digital control schemes like NMPC and Moving Horizon Estimation, this continuous model must be discretized into a sequence of steps defined by a constant time interval <span class="arithmatex">\(\Delta t\)</span>:</p>
-<div class="arithmatex">\[ x_{k+1} = F(x_k, u_k) \]</div>
+<p>$$</p>
+<p>x_{k+1} = F(x_k, u_k) </p>
+<p>$$</p>
 <p>While the simplest approach is Euler Integration (<span class="arithmatex">\(x_{k+1} = x_k + f(x_k, u_k) \Delta t\)</span>), it accumulates massive truncation errors and leads to instability when dealing with highly non-linear dynamics such as the Pacjeka tire model. Thus, a more robust integrator is mandatory.</p>
 <hr />
 <h2 id="2-runge-kutta-4th-order-rk4">2. Runge-Kutta 4th Order (RK4)</h2>
@@ -4644,22 +4648,32 @@
 <ol>
 <li><strong>First Slope (<span class="arithmatex">\(\mathbf{k}_1\)</span>)</strong>: The derivative at the beginning of the interval.</li>
 </ol>
-<p>$$ \mathbf{k}_1 = f(x_k, u_k) $$</p>
+<p>$$</p>
+<p>\mathbf{k}_1 = f(x_k, u_k) </p>
+<p>$$</p>
 <ol>
 <li><strong>Second Slope (<span class="arithmatex">\(\mathbf{k}_2\)</span>)</strong>: The derivative at the midpoint of the interval, evaluated using <span class="arithmatex">\(\mathbf{k}_1\)</span>.</li>
 </ol>
-<p>$$ \mathbf{k}_2 = f\left( x_k + \mathbf{k}_1 \frac{\Delta t}{2}, u_k \right) $$</p>
+<p>$$</p>
+<p>\mathbf{k}_2 = f\left( x_k + \mathbf{k}_1 \frac{\Delta t}{2}, u_k \right) </p>
+<p>$$</p>
 <ol>
 <li><strong>Third Slope (<span class="arithmatex">\(\mathbf{k}_3\)</span>)</strong>: A refined derivative at the midpoint, evaluated using <span class="arithmatex">\(\mathbf{k}_2\)</span>.</li>
 </ol>
-<p>$$ \mathbf{k}_3 = f\left( x_k + \mathbf{k}_2 \frac{\Delta t}{2}, u_k \right) $$</p>
+<p>$$</p>
+<p>\mathbf{k}_3 = f\left( x_k + \mathbf{k}_2 \frac{\Delta t}{2}, u_k \right) </p>
+<p>$$</p>
 <ol>
 <li><strong>Fourth Slope (<span class="arithmatex">\(\mathbf{k}_4\)</span>)</strong>: The derivative at the end of the interval, evaluated using <span class="arithmatex">\(\mathbf{k}_3\)</span>.</li>
 </ol>
-<p>$$ \mathbf{k}_4 = f(x_k + \mathbf{k}_3 \Delta t, u_k) $$</p>
+<p>$$</p>
+<p>\mathbf{k}_4 = f(x_k + \mathbf{k}_3 \Delta t, u_k) </p>
+<p>$$</p>
 <h3 id="22-state-update">2.2 State Update</h3>
 <p>The final predicted state <span class="arithmatex">\(x_{k+1}\)</span> is computed by combining the four slopes. The midpoint slopes (<span class="arithmatex">\(\mathbf{k}_2\)</span> and <span class="arithmatex">\(\mathbf{k}_3\)</span>) are given double weight as they represent the best estimate of the trajectory's curvature:</p>
-<div class="arithmatex">\[ x_{k+1} = x_k + \frac{\Delta t}{6} \Big( \mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4 \Big) \]</div>
+<p>$$</p>
+<p>x_{k+1} = x_k + \frac{\Delta t}{6} \Big( \mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4 \Big) </p>
+<p>$$</p>
 <div class="admonition tip">
 <p class="admonition-title">Error Characteristics</p>
 <p>RK4 provides a local truncation error of <span class="arithmatex">\(\mathcal{O}(\Delta t^5)\)</span> and a global accumulated error of <span class="arithmatex">\(\mathcal{O}(\Delta t^4)\)</span>. This ensures that NMPC predictions across the optimization horizon remain faithfully close to the real physics engine, securing control stability.</p>

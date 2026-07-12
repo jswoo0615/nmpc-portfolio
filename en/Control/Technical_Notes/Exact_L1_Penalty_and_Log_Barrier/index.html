@@ -4658,17 +4658,19 @@
 <p>To solve inequality constraints, the IPM solver introduces a virtual positive slack variable <span class="arithmatex">\(s \ge 0\)</span>, artificially converting the constraint into an equality constraint.</p>
 <div class="admonition math">
 <p class="admonition-title">Equality Constraint with Slack</p>
-<div class="arithmatex">\[
-c(x) + s = 0
-\]</div>
 </div>
+<p>$$</p>
+<div class="highlight"><pre><span></span><code>c(x) + s = 0
+</code></pre></div>
+<p>$$</p>
 <p>The L1 penalty term included in the Merit function is:</p>
 <div class="admonition math">
 <p class="admonition-title">L1 Penalty Term</p>
-<div class="arithmatex">\[
-w_{L1} |c + s + \alpha ds|
-\]</div>
 </div>
+<p>$$</p>
+<div class="highlight"><pre><span></span><code>w_{L1} |c + s + \alpha ds|
+</code></pre></div>
+<p>$$</p>
 <p>This absolute value <span class="arithmatex">\((|\cdot|)\)</span> term verifies <strong>"Does the physical reality (<span class="arithmatex">\(c\)</span>) perfectly align with the solver's internal virtual variable (<span class="arithmatex">\(s\)</span>)?"</strong>, regardless of whether the constraint is violated or not.</p>
 <ul>
 <li>Even if the vehicle is perfectly safe, being 5m away from an obstacle (<span class="arithmatex">\(c = -5\)</span>), if the solver's internal slack variable was calculated as <span class="arithmatex">\(s = 3\)</span>, it results in <span class="arithmatex">\(|-5 + 3| = |-2| = 2\)</span>. This incurs a massive penalty of <span class="arithmatex">\(2000 \ (w_{L1} \times 2)\)</span>.</li>
@@ -4678,25 +4680,26 @@ w_{L1} |c + s + \alpha ds|
 <p>This system combines two extreme mechanisms to achieve absolute robustness.</p>
 <div class="grid cards">
 <ul>
-<li>
-<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.96 11.31C10.82 8.1 11.5 6 13 6s2.18 2.1 3.04 5.31C17 14.92 18.1 19 22 19v-2c-2.2 0-3-2.46-4.03-6.2C17.08 7.46 16.15 4 13 4s-4.08 3.46-4.97 6.8C7.03 14.54 6.2 17 4 17V2H2v20h20v-2H4v-1c3.9 0 5-4.08 5.96-7.69"/></svg></span>
-    <strong>Log-Barrier</strong> (Long-term Direction / Soft Constraint)</p>
-<div class="arithmatex">\[-\mu \log(s + \alpha ds)\]</div>
+<li><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.96 11.31C10.82 8.1 11.5 6 13 6s2.18 2.1 3.04 5.31C17 14.92 18.1 19 22 19v-2c-2.2 0-3-2.46-4.03-6.2C17.08 7.46 16.15 4 13 4s-4.08 3.46-4.97 6.8C7.03 14.54 6.2 17 4 17V2H2v20h20v-2H4v-1c3.9 0 5-4.08 5.96-7.69"/></svg></span>
+    <strong>Log-Barrier</strong> (Long-term Direction / Soft Constraint)</li>
+</ul>
+<p>$$</p>
+<p>-\mu \log(s + \alpha ds)</p>
+<p>$$</p>
+<div class="highlight"><pre><span></span><code>- **Mechanism**: Imposes an infinite ($\infty$) penalty if the internal slack variable $s$ approaches zero.
+- **Purpose**: Establishes the long-term goal of &quot;staying within the feasible region&quot;. It gently but firmly pushes the trajectory to remain safely in the interior ($s &gt; 0$) without touching the boundaries.
+</code></pre></div>
 <ul>
-<li><strong>Mechanism</strong>: Imposes an infinite (<span class="arithmatex">\(\infty\)</span>) penalty if the internal slack variable <span class="arithmatex">\(s\)</span> approaches zero.</li>
-<li><strong>Purpose</strong>: Establishes the long-term goal of "staying within the feasible region". It gently but firmly pushes the trajectory to remain safely in the interior (<span class="arithmatex">\(s &gt; 0\)</span>) without touching the boundaries.</li>
+<li><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 19.63 13.43 8.2l-.71-.7 1.42-1.43L12 3.89c1.2-1.19 3.09-1.19 4.27 0l3.6 3.61-1.42 1.41h2.84l.71.71-3.55 3.59-.71-.71V9.62l-1.47 1.42-.71-.71L4.13 21.76z"/></svg></span>
+    <strong>L1 Penalty</strong> (Immediate Control / Hard Constraint)</li>
 </ul>
-</li>
-<li>
-<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 19.63 13.43 8.2l-.71-.7 1.42-1.43L12 3.89c1.2-1.19 3.09-1.19 4.27 0l3.6 3.61-1.42 1.41h2.84l.71.71-3.55 3.59-.71-.71V9.62l-1.47 1.42-.71-.71L4.13 21.76z"/></svg></span>
-    <strong>L1 Penalty</strong> (Immediate Control / Hard Constraint)</p>
-<p>$<span class="arithmatex">\(w_{L1} |c + s + \alpha ds|\)</span>$ (where <span class="arithmatex">\(w_{L1} = 1000.0\)</span>)</p>
-<ul>
-<li><strong>Mechanism</strong>: Instantly applies a massive linear penalty the moment the sum of physical reality (<span class="arithmatex">\(c\)</span>) and the internal variable (<span class="arithmatex">\(s\)</span>) deviates from zero.</li>
-<li><strong>Purpose</strong>: If the solver becomes blinded by performance (reducing cost function) and attempts to take a step (<span class="arithmatex">\(\alpha\)</span>) that ignores constraints during the Line Search, this term blows up the <code>merit</code> value with a ruthless weight, acting as a <strong>physical brake that instantly rejects the step</strong>.</li>
-</ul>
-</li>
-</ul>
+<p>$$</p>
+<p>w_{L1} |c + s + \alpha ds|</p>
+<p>$$</p>
+<p>(where <span class="arithmatex">\(w_{L1} = 1000.0\)</span>)</p>
+<div class="highlight"><pre><span></span><code>- **Mechanism**: Instantly applies a massive linear penalty the moment the sum of physical reality ($c$) and the internal variable ($s$) deviates from zero.
+- **Purpose**: If the solver becomes blinded by performance (reducing cost function) and attempts to take a step ($\alpha$) that ignores constraints during the Line Search, this term blows up the `merit` value with a ruthless weight, acting as a **physical brake that instantly rejects the step**.
+</code></pre></div>
 </div>
 <h2 id="why-an-exact-weight"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m23 12-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68zm-13 5-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9z"/></svg></span> Why an "Exact" Weight?</h2>
 <div class="admonition success">
