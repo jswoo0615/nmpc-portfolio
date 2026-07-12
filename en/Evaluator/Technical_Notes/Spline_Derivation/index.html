@@ -4842,11 +4842,13 @@ S_{i}(x) = a_{i} + b_{i}(x - x_{i}) + c_{i}(x - x_{i})^{2} + d_{i}(x - x_{i})^{3
 <ul>
 <li><strong>Initial Condition</strong>: <span class="arithmatex">\(a_{i} = y_{i}\)</span> (The function value at the start of each interval)</li>
 <li><strong>Interval Spacing</strong>: <span class="arithmatex">\(h_{i} = x_{i+1} - x_{i}\)</span></li>
-<li><strong>Natural Spline Boundary Condition</strong>: The curvature (second derivative) at both endpoints is assumed to be zero:</li>
+<li>
+<p><strong>Natural Spline Boundary Condition</strong>: The curvature (second derivative) at both endpoints is assumed to be zero:</p>
+<div class="arithmatex">\[
+S_{0}^{\prime \prime}(x_{0}) = 0, \quad S_{n-1}^{\prime \prime}(x_{n}) = 0
+\]</div>
+</li>
 </ul>
-<p>$$
-  S_{0}^{\prime \prime}(x_{0}) = 0, \quad S_{n-1}^{\prime \prime}(x_{n}) = 0
-  $$</p>
 <h3 id="11-derivative-expansion">1.1. Derivative Expansion</h3>
 <p>By differentiating the polynomial, the first and second derivatives are derived:</p>
 <ul>
@@ -4899,20 +4901,24 @@ X(s) = S_{x}(s), \quad Y(s) = S_{y}(s)
 <div class="tabbed-block">
 <ul>
 <li><span class="arithmatex">\(S_{i}(x_{i+1}) = a_{i} + b_{i}h_{i} + c_{i}h_{i}^{2} + d_{i}h_{i}^{3} = a_{i+1}\)</span></li>
-<li>Rearranging for <span class="arithmatex">\(b_{i}\)</span> (substituting <span class="arithmatex">\(d_{i}\)</span> from Step 1):</li>
+<li>
+<p>Rearranging for <span class="arithmatex">\(b_{i}\)</span> (substituting <span class="arithmatex">\(d_{i}\)</span> from Step 1):</p>
+<div class="arithmatex">\[
+b_{i} = \frac{a_{i+1} - a_{i}}{h_{i}} - \frac{h_{i}}{3}(c_{i+1} + 2c_{i})
+\]</div>
+</li>
 </ul>
-<p>$$
-  b_{i} = \frac{a_{i+1} - a_{i}}{h_{i}} - \frac{h_{i}}{3}(c_{i+1} + 2c_{i})
-  $$</p>
 </div>
 <div class="tabbed-block">
 <ul>
 <li><span class="arithmatex">\(S_{i}^{\prime}(x_{i+1}) = b_{i} + 2c_{i}h_{i} + 3d_{i}h_{i}^{2} = b_{i+1}\)</span></li>
-<li>By substituting <span class="arithmatex">\(b_{i}, b_{i+1}, d_{i}\)</span> obtained in Steps 1 and 2 into this equation and sorting in descending order of <span class="arithmatex">\(c\)</span>, the following core relation is derived:</li>
+<li>
+<p>By substituting <span class="arithmatex">\(b_{i}, b_{i+1}, d_{i}\)</span> obtained in Steps 1 and 2 into this equation and sorting in descending order of <span class="arithmatex">\(c\)</span>, the following core relation is derived:</p>
+<div class="arithmatex">\[
+h_{i-1}c_{i-1} + 2(h_{i-1} + h_{i})c_{i} + h_{i}c_{i+1} = \frac{3}{h_{i}}(a_{i+1} - a_{i}) - \frac{3}{h_{i-1}}(a_{i} - a_{i-1})
+\]</div>
+</li>
 </ul>
-<p>$$
-  h_{i-1}c_{i-1} + 2(h_{i-1} + h_{i})c_{i} + h_{i}c_{i+1} = \frac{3}{h_{i}}(a_{i+1} - a_{i}) - \frac{3}{h_{i-1}}(a_{i} - a_{i-1})
-  $$</p>
 </div>
 </div>
 </div>
@@ -4948,13 +4954,15 @@ X(s) = S_{x}(s), \quad Y(s) = S_{y}(s)
 </ul>
 <p>Solving the system of equations:</p>
 <ol>
-<li>Substitute <span class="arithmatex">\(c_{2} = -6 - 4c_{1}\)</span> into the second equation:</li>
-</ol>
-<p>$$
-   c_{1} + 4(-6 - 4c_{1}) = 6 \implies c_{1} - 24 - 16c_{1} = 6 \implies -15c_{1} = 30 \implies c_{1} = -2
-   $$</p>
-<ol>
-<li><span class="arithmatex">\(c_{2} = -6 - 4(-2) = 2\)</span></li>
+<li>
+<p>Substitute <span class="arithmatex">\(c_{2} = -6 - 4c_{1}\)</span> into the second equation:</p>
+<div class="arithmatex">\[
+c_{1} + 4(-6 - 4c_{1}) = 6 \implies c_{1} - 24 - 16c_{1} = 6 \implies -15c_{1} = 30 \implies c_{1} = -2
+\]</div>
+</li>
+<li>
+<p><span class="arithmatex">\(c_{2} = -6 - 4(-2) = 2\)</span></p>
+</li>
 <li>Result: <span class="arithmatex">\(c_{0} = 0, c_{1} = -2, c_{2} = 2, c_{3} = 0\)</span></li>
 </ol>
 <h3 id="43-calculation-of-remaining-coefficients-b_i-d_i">4.3. Calculation of Remaining Coefficients (<span class="arithmatex">\(b_{i}, d_{i}\)</span>)</h3>
