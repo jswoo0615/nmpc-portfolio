@@ -4670,37 +4670,41 @@ V_k(\delta x) = \frac{1}{2} \delta x^T P_k \delta x + p_k^T \delta x
 <h3 id="12-backward-pass-value-iteration">1.2 Backward Pass (Value Iteration)</h3>
 <p>Starting from the terminal state <span class="arithmatex">\(P_H = Q_H\)</span> and <span class="arithmatex">\(p_H = q_H\)</span>, we recurse backward (<span class="arithmatex">\(k = H-1 \dots 0\)</span>) to calculate the optimal feedback policy:</p>
 <ol>
-<li><strong>Control Hessian &amp; Gradient</strong>:</li>
+<li>
+<p><strong>Control Hessian &amp; Gradient</strong>:</p>
+<div class="arithmatex">\[
+Q_{uu} = R_k + B_k^T P_{k+1} B_k + \lambda_{LM} I
+\]</div>
+<div class="arithmatex">\[
+Q_{ux} = B_k^T P_{k+1} A_k
+\]</div>
+<div class="arithmatex">\[
+q_u = r_k + B_k^T (p_{k+1} + P_{k+1} d_k)
+\]</div>
+</li>
 </ol>
-<p>$$
-   Q_{uu} = R_k + B_k^T P_{k+1} B_k + \lambda_{LM} I
-   $$</p>
-<p>$$
-   Q_{ux} = B_k^T P_{k+1} A_k
-   $$</p>
-<p>$$
-   q_u = r_k + B_k^T (p_{k+1} + P_{k+1} d_k)
-   $$</p>
 <p><em>(Note: <span class="arithmatex">\(\lambda_{LM}\)</span> is the Levenberg-Marquardt regularization factor to guarantee positive definiteness).</em></p>
 <ol>
-<li><strong>Optimal Policy Gains</strong>:
-   We solve for the Feedback (<span class="arithmatex">\(K_k\)</span>) and Feedforward (<span class="arithmatex">\(k_{ff, k}\)</span>) gains using LDLT Decomposition on <span class="arithmatex">\(Q_{uu}\)</span>:</li>
+<li>
+<p><strong>Optimal Policy Gains</strong>:
+   We solve for the Feedback (<span class="arithmatex">\(K_k\)</span>) and Feedforward (<span class="arithmatex">\(k_{ff, k}\)</span>) gains using LDLT Decomposition on <span class="arithmatex">\(Q_{uu}\)</span>:</p>
+<div class="arithmatex">\[
+K_k = -Q_{uu}^{-1} Q_{ux}
+\]</div>
+<div class="arithmatex">\[
+k_{ff, k} = -Q_{uu}^{-1} q_u
+\]</div>
+</li>
+<li>
+<p><strong>Value Function Update</strong>:</p>
+<div class="arithmatex">\[
+P_k = Q_k + A_k^T P_{k+1} A_k + K_k^T Q_{ux}
+\]</div>
+<div class="arithmatex">\[
+p_k = q_k + A_k^T (p_{k+1} + P_{k+1} d_k) + Q_{ux}^T k_{ff, k}
+\]</div>
+</li>
 </ol>
-<p>$$
-   K_k = -Q_{uu}^{-1} Q_{ux}
-   $$</p>
-<p>$$
-   k_{ff, k} = -Q_{uu}^{-1} q_u
-   $$</p>
-<ol>
-<li><strong>Value Function Update</strong>:</li>
-</ol>
-<p>$$
-   P_k = Q_k + A_k^T P_{k+1} A_k + K_k^T Q_{ux}
-   $$</p>
-<p>$$
-   p_k = q_k + A_k^T (p_{k+1} + P_{k+1} d_k) + Q_{ux}^T k_{ff, k}
-   $$</p>
 <h3 id="13-forward-pass-trajectory-simulation">1.3 Forward Pass (Trajectory Simulation)</h3>
 <p>Once the gains are computed, we simulate the optimal trajectory forward from the initial state <span class="arithmatex">\(\delta x_0 = 0\)</span>:</p>
 <div class="arithmatex">\[
@@ -4713,30 +4717,32 @@ V_k(\delta x) = \frac{1}{2} \delta x^T P_k \delta x + p_k^T \delta x
 <h2 id="2-kkt-convergence-metrics">2. KKT Convergence Metrics</h2>
 <p>To verify if the non-linear optimization has successfully converged, the <code>KKTMonitor</code> checks the four Karush-Kuhn-Tucker conditions. A solution is optimal if all <span class="arithmatex">\(L_\infty\)</span> norms are below a <code>TOLERANCE</code> <span class="arithmatex">\(\tau\)</span> (e.g., <span class="arithmatex">\(10^{-6}\)</span>).</p>
 <ol>
-<li><strong>Stationarity (Gradient of Lagrangian is zero)</strong>:</li>
+<li>
+<p><strong>Stationarity (Gradient of Lagrangian is zero)</strong>:</p>
+<div class="arithmatex">\[
+\| \nabla L(x, u, \lambda, \mu) \|_\infty \le \tau
+\]</div>
+</li>
+<li>
+<p><strong>Primal Feasibility (Constraints are satisfied)</strong>:</p>
+<div class="arithmatex">\[
+\| x_{k+1} - f(x_k, u_k) \|_\infty \le \tau
+\]</div>
+</li>
+<li>
+<p><strong>Dual Feasibility (Inequality multipliers are non-negative)</strong>:</p>
+<div class="arithmatex">\[
+\max(0, -\mu) \le \tau
+\]</div>
+</li>
+<li>
+<p><strong>Complementary Slackness (Active constraint alignment)</strong>:
+   In the Interior Point Method, this is modified by the barrier parameter <span class="arithmatex">\(\mu_{target}\)</span>:</p>
+<div class="arithmatex">\[
+\| S \mu - \mu_{target} \mathbf{1} \|_\infty \le \tau
+\]</div>
+</li>
 </ol>
-<p>$$
-   | \nabla L(x, u, \lambda, \mu) |_\infty \le \tau
-   $$</p>
-<ol>
-<li><strong>Primal Feasibility (Constraints are satisfied)</strong>:</li>
-</ol>
-<p>$$
-   | x_{k+1} - f(x_k, u_k) |_\infty \le \tau
-   $$</p>
-<ol>
-<li><strong>Dual Feasibility (Inequality multipliers are non-negative)</strong>:</li>
-</ol>
-<p>$$
-   \max(0, -\mu) \le \tau
-   $$</p>
-<ol>
-<li><strong>Complementary Slackness (Active constraint alignment)</strong>:
-   In the Interior Point Method, this is modified by the barrier parameter <span class="arithmatex">\(\mu_{target}\)</span>:</li>
-</ol>
-<p>$$
-   | S \mu - \mu_{target} \mathbf{1} |_\infty \le \tau
-   $$</p>
 <p><em>(Where <span class="arithmatex">\(S\)</span> is the diagonal matrix of slack variables).</em></p>
 
 

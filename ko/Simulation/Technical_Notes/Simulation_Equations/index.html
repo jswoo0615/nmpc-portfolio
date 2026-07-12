@@ -4646,29 +4646,31 @@ x_{k+1} = F(x_k, u_k)
 <h3 id="21-slope-formulation">2.1 기울기 공식화 (Slope Formulation)</h3>
 <p>현재 상태 <span class="arithmatex">\(x_k\)</span>와 제어 입력 <span class="arithmatex">\(u_k\)</span>가 주어졌을 때 (디지털 제어기의 영차 유지(Zero-Order Hold) 특성으로 인해 <span class="arithmatex">\(\Delta t\)</span> 간격 동안 일정하다고 가정함):</p>
 <ol>
-<li><strong>첫 번째 기울기 (<span class="arithmatex">\(\mathbf{k}_1\)</span>)</strong>: 구간 시작점에서의 도함수.</li>
+<li>
+<p><strong>첫 번째 기울기 (<span class="arithmatex">\(\mathbf{k}_1\)</span>)</strong>: 구간 시작점에서의 도함수.</p>
+<div class="arithmatex">\[
+\mathbf{k}_1 = f(x_k, u_k)
+\]</div>
+</li>
+<li>
+<p><strong>두 번째 기울기 (<span class="arithmatex">\(\mathbf{k}_2\)</span>)</strong>: 구간 중간점에서의 도함수로, <span class="arithmatex">\(\mathbf{k}_1\)</span>을 사용하여 평가됨.</p>
+<div class="arithmatex">\[
+\mathbf{k}_2 = f\left( x_k + \mathbf{k}_1 \frac{\Delta t}{2}, u_k \right)
+\]</div>
+</li>
+<li>
+<p><strong>세 번째 기울기 (<span class="arithmatex">\(\mathbf{k}_3\)</span>)</strong>: 중간점에서의 정제된 도함수로, <span class="arithmatex">\(\mathbf{k}_2\)</span>를 사용하여 평가됨.</p>
+<div class="arithmatex">\[
+\mathbf{k}_3 = f\left( x_k + \mathbf{k}_2 \frac{\Delta t}{2}, u_k \right)
+\]</div>
+</li>
+<li>
+<p><strong>네 번째 기울기 (<span class="arithmatex">\(\mathbf{k}_4\)</span>)</strong>: 구간 끝점에서의 도함수로, <span class="arithmatex">\(\mathbf{k}_3\)</span>을 사용하여 평가됨.</p>
+<div class="arithmatex">\[
+\mathbf{k}_4 = f(x_k + \mathbf{k}_3 \Delta t, u_k)
+\]</div>
+</li>
 </ol>
-<p>$$
-   \mathbf{k}_1 = f(x_k, u_k)
-   $$</p>
-<ol>
-<li><strong>두 번째 기울기 (<span class="arithmatex">\(\mathbf{k}_2\)</span>)</strong>: 구간 중간점에서의 도함수로, <span class="arithmatex">\(\mathbf{k}_1\)</span>을 사용하여 평가됨.</li>
-</ol>
-<p>$$
-   \mathbf{k}_2 = f\left( x_k + \mathbf{k}_1 \frac{\Delta t}{2}, u_k \right)
-   $$</p>
-<ol>
-<li><strong>세 번째 기울기 (<span class="arithmatex">\(\mathbf{k}_3\)</span>)</strong>: 중간점에서의 정제된 도함수로, <span class="arithmatex">\(\mathbf{k}_2\)</span>를 사용하여 평가됨.</li>
-</ol>
-<p>$$
-   \mathbf{k}_3 = f\left( x_k + \mathbf{k}_2 \frac{\Delta t}{2}, u_k \right)
-   $$</p>
-<ol>
-<li><strong>네 번째 기울기 (<span class="arithmatex">\(\mathbf{k}_4\)</span>)</strong>: 구간 끝점에서의 도함수로, <span class="arithmatex">\(\mathbf{k}_3\)</span>을 사용하여 평가됨.</li>
-</ol>
-<p>$$
-   \mathbf{k}_4 = f(x_k + \mathbf{k}_3 \Delta t, u_k)
-   $$</p>
 <h3 id="22-state-update">2.2 상태 업데이트 (State Update)</h3>
 <p>최종 예측된 상태 <span class="arithmatex">\(x_{k+1}\)</span>은 네 가지 기울기를 결합하여 계산됩니다. 중간점 기울기(<span class="arithmatex">\(\mathbf{k}_2\)</span> 및 <span class="arithmatex">\(\mathbf{k}_3\)</span>)는 궤적 곡률의 가장 좋은 추정치를 나타내므로 두 배의 가중치가 부여됩니다:</p>
 <div class="arithmatex">\[

@@ -4646,29 +4646,31 @@ x_{k+1} = F(x_k, u_k)
 <h3 id="21-slope-formulation">2.1 Slope Formulation</h3>
 <p>Given the current state <span class="arithmatex">\(x_k\)</span> and the control input <span class="arithmatex">\(u_k\)</span> (which is assumed constant over the interval <span class="arithmatex">\(\Delta t\)</span> due to the Zero-Order Hold property of digital controllers):</p>
 <ol>
-<li><strong>First Slope (<span class="arithmatex">\(\mathbf{k}_1\)</span>)</strong>: The derivative at the beginning of the interval.</li>
+<li>
+<p><strong>First Slope (<span class="arithmatex">\(\mathbf{k}_1\)</span>)</strong>: The derivative at the beginning of the interval.</p>
+<div class="arithmatex">\[
+\mathbf{k}_1 = f(x_k, u_k)
+\]</div>
+</li>
+<li>
+<p><strong>Second Slope (<span class="arithmatex">\(\mathbf{k}_2\)</span>)</strong>: The derivative at the midpoint of the interval, evaluated using <span class="arithmatex">\(\mathbf{k}_1\)</span>.</p>
+<div class="arithmatex">\[
+\mathbf{k}_2 = f\left( x_k + \mathbf{k}_1 \frac{\Delta t}{2}, u_k \right)
+\]</div>
+</li>
+<li>
+<p><strong>Third Slope (<span class="arithmatex">\(\mathbf{k}_3\)</span>)</strong>: A refined derivative at the midpoint, evaluated using <span class="arithmatex">\(\mathbf{k}_2\)</span>.</p>
+<div class="arithmatex">\[
+\mathbf{k}_3 = f\left( x_k + \mathbf{k}_2 \frac{\Delta t}{2}, u_k \right)
+\]</div>
+</li>
+<li>
+<p><strong>Fourth Slope (<span class="arithmatex">\(\mathbf{k}_4\)</span>)</strong>: The derivative at the end of the interval, evaluated using <span class="arithmatex">\(\mathbf{k}_3\)</span>.</p>
+<div class="arithmatex">\[
+\mathbf{k}_4 = f(x_k + \mathbf{k}_3 \Delta t, u_k)
+\]</div>
+</li>
 </ol>
-<p>$$
-   \mathbf{k}_1 = f(x_k, u_k)
-   $$</p>
-<ol>
-<li><strong>Second Slope (<span class="arithmatex">\(\mathbf{k}_2\)</span>)</strong>: The derivative at the midpoint of the interval, evaluated using <span class="arithmatex">\(\mathbf{k}_1\)</span>.</li>
-</ol>
-<p>$$
-   \mathbf{k}_2 = f\left( x_k + \mathbf{k}_1 \frac{\Delta t}{2}, u_k \right)
-   $$</p>
-<ol>
-<li><strong>Third Slope (<span class="arithmatex">\(\mathbf{k}_3\)</span>)</strong>: A refined derivative at the midpoint, evaluated using <span class="arithmatex">\(\mathbf{k}_2\)</span>.</li>
-</ol>
-<p>$$
-   \mathbf{k}_3 = f\left( x_k + \mathbf{k}_2 \frac{\Delta t}{2}, u_k \right)
-   $$</p>
-<ol>
-<li><strong>Fourth Slope (<span class="arithmatex">\(\mathbf{k}_4\)</span>)</strong>: The derivative at the end of the interval, evaluated using <span class="arithmatex">\(\mathbf{k}_3\)</span>.</li>
-</ol>
-<p>$$
-   \mathbf{k}_4 = f(x_k + \mathbf{k}_3 \Delta t, u_k)
-   $$</p>
 <h3 id="22-state-update">2.2 State Update</h3>
 <p>The final predicted state <span class="arithmatex">\(x_{k+1}\)</span> is computed by combining the four slopes. The midpoint slopes (<span class="arithmatex">\(\mathbf{k}_2\)</span> and <span class="arithmatex">\(\mathbf{k}_3\)</span>) are given double weight as they represent the best estimate of the trajectory's curvature:</p>
 <div class="arithmatex">\[
