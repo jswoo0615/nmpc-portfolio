@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../Vehicle_Equations/">
+        <link rel="prev" href="../01_Introduction_to_LUT/">
       
       
         <link rel="next" href="../../../Estimator/Overview/">
@@ -547,6 +547,34 @@
     
   
     Vehicle Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../en/Dynamics/Technical_Notes/01_Introduction_to_LUT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to LUT
   
 
     
@@ -2626,6 +2654,34 @@
     
   
     Vehicle Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_Introduction_to_LUT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to LUT
   
 
     
@@ -4741,9 +4797,14 @@
 <p><span class="arithmatex">\(F_{y} = \mu_{y}(\kappa, \alpha) \times F_{z, \text{current}}\)</span></p>
 </blockquote>
 <h3 id="32-ad-c1-catmull-rom-bicubic-interpolation">3.2. AD 호환 <span class="arithmatex">\(C^1\)</span> 연속성 (Catmull-Rom Bicubic Interpolation)</h3>
-<p>Acados, CasADi와 같은 비선형 최적화 솔버의 내부 자동 미분(Auto-Differentiation, AD) 엔진은 함수의 미분값이 튀거나 불연속적인 꺾인 점(Kink)을 만나면 그래디언트가 폭발하여 연산을 실패합니다.
-단순한 2D Bilinear Interpolation(<span class="arithmatex">\(C^0\)</span> 연속)은 격자점 사이는 직선으로 이어지나 격자점에서 기울기가 꺾이는 치명적인 문제가 있습니다.
-이를 방지하기 위해 <strong>Catmull-Rom Spline 곡선 기반의 Bicubic Interpolation</strong>을 C++ 템플릿 제네릭 프로그래밍(<code>template &lt;typename T&gt;</code>)으로 구현하였습니다. 그 결과 격자점을 매끄럽게 잇는 완벽한 <span class="arithmatex">\(C^1\)</span> 곡면이 생성되어, 솔버의 연쇄 법칙(Chain Rule) 추적이 끊기지 않도록 방어막을 구축했습니다.</p>
+<p>Acados, CasADi와 같은 비선형 최적화 솔버의 내부 자동 미분(Auto-Differentiation, AD) 엔진은 함수의 미분값이 튀거나 불연속적인 꺾인 점(Kink)을 만나면 그래디언트가 폭발하여 연산을 실패합니다. 이를 이해하기 위해 다음의 시각적 비유를 적용할 수 있습니다.</p>
+<p><strong>1. 4개의 점 (Bilinear Interpolation, <span class="arithmatex">\(C^0\)</span> 연속): '텐트 지형'</strong>
+가장 가까운 4개의 격자점을 평면으로 이어 붙이면 기둥 4개에 천을 팽팽하게 당긴 '텐트' 모양이 됩니다. 면은 평평하지만 격자 경계선에서 종이가 접힌 것처럼 '뾰족한 모서리(Crease)'가 생깁니다.
+눈을 가린 채 지팡이로 지형의 기울기를 짚으며 최적해를 찾는 NMPC의 AD 엔진(등산객)이 이 모서리를 짚는 순간, 기울기(1차 미분)가 불연속적으로 튕기며 2차 미분(Hessian)이 무한대(<span class="arithmatex">\(\infty\)</span>)로 폭발합니다. 결과적으로 KKT 행렬이 붕괴하고 솔버는 <code>MATH_ERROR</code>를 뱉게 됩니다.</p>
+<p><strong>2. 16개의 점 (Bicubic Interpolation, <span class="arithmatex">\(C^1\)</span> 연속): '매끄러운 아스팔트'</strong>
+접힌 자국 없이 지형을 부드러운 곡면으로 포장하려면 주변 16개의 격자점을 모두 끌어와 3차 다항식(Cubic Polynomial)을 풀어야 합니다.
+이를 통해 경계선에서 절대 꺾이지 않는 완벽한 곡면이 완성됩니다. AD 엔진이 지팡이로 경계선을 짚어도 기울기가 부드럽게 넘어가므로, 솔버는 단 1~2번의 이터레이션 만에 최적해로 빨려 들어가는 2차 수렴성(Quadratic Convergence)을 완벽하게 유지합니다.</p>
+<p>결론적으로, 주변 16개의 점을 연산하는 비용은 <strong>NMPC 솔버의 수렴성 붕괴를 막기 위해 지불해야 하는 가장 저렴한 보험료</strong>입니다. 본 아키텍처는 이를 방지하기 위해 <strong>Catmull-Rom Spline 기반의 Bicubic Interpolation</strong>을 C++ 템플릿 제네릭 프로그래밍(<code>template &lt;typename T&gt;</code>)으로 밑바닥부터 구현하여 연쇄 법칙(Chain Rule) 추적이 끊기지 않도록 완벽한 방어막을 구축했습니다.</p>
 <h2 id="4">4. 데이터 추출 및 튜닝 워크플로우</h2>
 <p>사내 AI 타이어 분석 툴이나 차량 시뮬레이터(CarMaker, IPG 등)에서 촘촘한 해상도(예: 21x21 이상)로 정규화된 <span class="arithmatex">\(\mu_x, \mu_y\)</span> 데이터를 추출합니다.
 추출한 데이터를 <code>CombinedSlipTireLUT.hpp</code> 내부의 C++ 2차원 배열 포맷으로 덮어씌우고 다시 빌드하는 것만으로, NMPC 제어기가 새로운 타이어의 마찰 특성과 한계를 즉시 깨닫게 됩니다.</p>

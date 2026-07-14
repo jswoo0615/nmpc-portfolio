@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../Vehicle_Equations/">
+        <link rel="prev" href="../01_Introduction_to_LUT/">
       
       
         <link rel="next" href="../../../Estimator/Overview/">
@@ -553,6 +553,34 @@
     
   
     Vehicle Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_Introduction_to_LUT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to LUT
   
 
     
@@ -2789,6 +2817,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../ko/Dynamics/Technical_Notes/01_Introduction_to_LUT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to LUT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../ko/Dynamics/Technical_Notes/02_Tire_2D_LUT_Architecture/" class="md-nav__link">
         
   
@@ -4741,9 +4797,14 @@ The actual tire force is dynamically expanded/contracted (Dynamic Scaling) durin
 <p><span class="arithmatex">\(F_{y} = \mu_{y}(\kappa, \alpha) \times F_{z, \text{current}}\)</span></p>
 </blockquote>
 <h3 id="32-ad-compatible-c1-continuity-catmull-rom-bicubic-interpolation">3.2. AD-Compatible <span class="arithmatex">\(C^1\)</span> Continuity (Catmull-Rom Bicubic Interpolation)</h3>
-<p>The internal Auto-Differentiation (AD) engines of nonlinear optimization solvers like Acados and CasADi will fail with exploding gradients if they encounter non-differentiable kinks or discontinuous derivatives.
-A simple 2D Bilinear Interpolation (<span class="arithmatex">\(C^0\)</span> continuous) connects grid points with straight lines, causing the slope to break critically at the grid points.
-To prevent this, <strong>Bicubic Interpolation based on Catmull-Rom Spline curves</strong> was implemented from scratch using C++ template generic programming (<code>template &lt;typename T&gt;</code>). As a result, a perfect <span class="arithmatex">\(C^1\)</span> surface smoothly connecting the grid points is generated, building a defensive shield so that the solver's chain rule tracking is never interrupted.</p>
+<p>The internal Auto-Differentiation (AD) engines of nonlinear optimization solvers like Acados and CasADi will fail with exploding gradients if they encounter non-differentiable kinks or discontinuous derivatives. To intuitively understand this, consider the following visual analogy:</p>
+<p><strong>1. 4 Points (Bilinear Interpolation, <span class="arithmatex">\(C^0\)</span> Continuity): The 'Tent Terrain'</strong>
+Connecting the closest 4 grid points with a plane creates a 'tent' shape, like a canvas pulled taut over 4 poles. While the faces are flat, 'creases' form at the grid boundaries where the canvas folds.
+The NMPC's AD engine acts like a blindfolded hiker using a walking stick to probe the terrain's slope to find the optimal path. The moment the stick hits this crease, the slope (1st derivative) bounces discontinuously, causing the 2nd derivative (Hessian) to explode to infinity (<span class="arithmatex">\(\infty\)</span>). Consequently, the KKT matrix collapses, and the solver returns a <code>MATH_ERROR</code>.</p>
+<p><strong>2. 16 Points (Bicubic Interpolation, <span class="arithmatex">\(C^1\)</span> Continuity): The 'Smooth Asphalt'</strong>
+To pave the terrain into a smooth curve without creases, all 16 surrounding grid points must be referenced to solve a Cubic Polynomial.
+This creates a perfectly smooth surface that never breaks at the boundaries. Even when the AD engine probes the boundaries, the slope transitions smoothly, allowing the solver to maintain strict Quadratic Convergence, finding the optimal solution in just 1 or 2 iterations.</p>
+<p>In conclusion, the computational cost of evaluating 16 points is <strong>the cheapest insurance premium to prevent the NMPC solver's convergence collapse.</strong> To achieve this, <strong>Bicubic Interpolation based on Catmull-Rom Spline curves</strong> was implemented from scratch using C++ template generic programming (<code>template &lt;typename T&gt;</code>), building a flawless defensive shield that ensures the solver's chain rule tracking is never interrupted.</p>
 <h2 id="4-data-extraction-and-tuning-workflow">4. Data Extraction and Tuning Workflow</h2>
 <p>Extract normalized <span class="arithmatex">\(\mu_x, \mu_y\)</span> data at a dense resolution (e.g., 21x21 or higher) from internal AI tire analysis tools or vehicle simulators (CarMaker, IPG, etc.).
 Simply by overwriting the extracted data into the C++ 2D array format inside <code>CombinedSlipTireLUT.hpp</code> and rebuilding, the NMPC controller immediately realizes the friction characteristics and limits of the new tire.</p>
