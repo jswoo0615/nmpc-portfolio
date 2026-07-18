@@ -4939,6 +4939,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#2-mf52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        부록 2: MF52 타이어 업그레이드 (같은 날 후속)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-tir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        부록 3: .tir 일반화 + 조향 지그재그 + 멀티맵 재검증 (같은 날 후속)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="부록 3: .tir 일반화 + 조향 지그재그 + 멀티맵 재검증 (같은 날 후속)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .tir 자동 캘리브레이션 (임의 표준 타이어 파일 지원)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        조향 지그재그(펌핑) 조사 — 부분 해결, 대회 전 필수 완결 과제
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#town04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Town04 고속도로 + 전맵 재검증 (모두 무수정)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5156,6 +5217,37 @@
 <li>JetsonNano 브랜치(CUDA/Jetson 배포 인프라)를 dev1에 병합 — 충돌 0, x86 빌드/주행 수치 동등성 실증 (91→16 fd 0.93/0.146).</li>
 <li>수학 라이브러리 diff는 CUDA_CALLABLE 주석 + 호스트/디바이스 분기(호스트 경로 std:: 동일)로 무해.</li>
 <li><strong>잠재 함정</strong>: <code>StaticMatrix</code> initializer_list 생성자의 해석이 저장소 순서(column-major)에서 <strong>row-major 재해석</strong>으로 변경됨. 현재 2D 행렬 브레이스 초기화 사용처는 없지만, 향후 2D 행렬을 중괄호로 초기화할 때 구버전 습관(열 우선 나열)으로 쓰면 조용히 전치됨. 벡터(StaticVector)는 순서 불변.</li>
+</ul>
+<h2 id="2-mf52">부록 2: MF52 타이어 업그레이드 (같은 날 후속)</h2>
+<ul>
+<li><strong>발견</strong>: 6DOF 예측 모델의 횡력은 100% MF52 LUT 경로(<code>tire_lut.getForces</code>)에서 나오며, 이전에 동정 반영한 <code>tire_params_base.c1</code>은 이 경로에서 <strong>미사용</strong>(무효)이었음. 기본 MF52 파라미터의 강성은 실측 대비 전륜 +26%/후륜 +116% 과대.</li>
+<li><strong>비선형 동정</strong> (identify_tire_mf52.py): 스텝 조향 과도 중 힘/모멘트 평형 2식(m·ay, Iz·ṙ)으로 매 샘플 축력 역산 — 정상원 선회 없이 α 0~10° 커버(1520 샘플). 선형 강성이 정상상태 동정과 교차 일치(전 91.4k vs 90.1k N/rad).</li>
+<li><strong>CARLA 타이어의 실체</strong>: PhysX <code>tire_friction=3.5</code> — 도로 주행 영역에서 사실상 포화하지 않는 선형 타이어. 포화 형상(C/E)은 데이터로 동정 불가 → 표준값(C=1.4, E=−0.5), PDY1=3.5.</li>
+<li><strong>LUT 구조 함정</strong>: 런타임 <code>getForces</code>는 FNOMIN에서 만든 정규화 곡선을 fz에 선형 스케일(×load_modifier) — <strong>PKY2의 하중 의존 Kya는 반영 안 됨</strong>. 따라서 공칭 기울기 k0를 양축 절충(8.477/rad)으로 설정: 유효 강성 전륜 −3.3%/후륜 +3.5%.</li>
+<li><strong>통합</strong>: carla_tesla.tir 생성(PKY1=9.183, PKY2=1.5, 시프트/캠버/복합슬립 항 0), wrapper <code>load_tire_model()</code> 추가, planner 솔버 생성 3지점을 <code>_make_solver()</code>로 통합(재생성 시 타이어 유지).</li>
+<li><strong>검증</strong>: 91→16 fd max 0.82→<strong>0.67m</strong>/avg 0.152, 36.9km/h, Fast Exit 2434→2831·Exhausted 1 (모델 정합 → 웜스타트 품질 선순환). 105→84 avg fd 0.340→<strong>0.220</strong>(−35%), 29.6→31.9km/h.</li>
+</ul>
+<h2 id="3-tir">부록 3: .tir 일반화 + 조향 지그재그 + 멀티맵 재검증 (같은 날 후속)</h2>
+<h3 id="tir">.tir 자동 캘리브레이션 (임의 표준 타이어 파일 지원)</h3>
+<ul>
+<li>요구: CARLA 역산 .tir뿐 아니라 <strong>임의의 표준 .tir 계수로부터 마찰/강성을 역산해 제어</strong> 가능해야 함.</li>
+<li>1차 구현(mu_0 단일 스케일): 기울기를 맞추면 피크가 0.64g로 왜곡 → 하드 경로 저하 확인.</li>
+<li><strong>최종: MF52 정식 스케일 채널 분리 보정</strong> — 로드 시 .tir 자체 계수에서 k0(공칭 정규화 강성)과 피크 mu를 프로브하고, <code>LKY = k0_동정/k0_tir</code>(부호 포함 — ISO 관례의 음수 Kya 자동 흡수), <code>LMUY = mu_동정/mu_tir</code>로 독립 정합. wrapper <code>load_tire_model(path, lky, lmuy)</code>, planner <code>_compute_tire_scales()</code>.</li>
+<li>검증: representative_mf52.tir(LKY=−0.635, LMUY=3.057)로 기준 경로 fd 0.63/0.151 — carla_tesla와 동등.</li>
+</ul>
+<h3 id="_4">조향 지그재그(펌핑) 조사 — <strong>부분 해결, 대회 전 필수 완결 과제</strong></h3>
+<ul>
+<li>증상(사용자 관찰): 곡선에서 조향을 ±0.2rad(휠 ~11.5°) 줬다 풀었다 반복.</li>
+<li>배제된 원인: 웜리셋 매 솔브 발동(0.5초 쿨다운 부여 — 지표 불변으로 주범 아님이 판명, 단 콜드 분산 억제 차원에서 유지).</li>
+<li><strong>수정된 원인: 적응 회랑의 자기참조 토글</strong> — |d|가 0.6 문턱을 오갈 때 배리어 경계가 0.8↔d+1.0으로 매 틱 점프 → QP 해가 함께 점프. 확장은 즉시, <strong>수축은 틱당 1cm 연속 감쇠</strong>로 배리어 연속화.</li>
+<li>효과: <strong>고속(&gt;50km/h) 구간 지그재그 전 주행 0~5회</strong> (Town04 고속도로 진입 40m 전 흔들림 해소, entry 740m 경로 fd 평균 0.099).</li>
+<li>저속 구간에 지표상 남는 반전은 틱 검증 결과 대부분 실제 참조 기하(램프 치케인/차선변경 S-블렌드) 추종 — 단 <strong>저속 실제 지그재그가 완전히 0은 아님. 대회 전 반드시 완결해야 하는 필수 과제</strong> (사용자 지정). 후보 원인: Suboptimal 솔브의 해 분산, kappa-fade/straight_gain 게인 전환, EMA α=0.5 통과 대역.</li>
+</ul>
+<h3 id="town04">Town04 고속도로 + 전맵 재검증 (모두 무수정)</h3>
+<ul>
+<li>Town04 진입 램프 ×2, 출구 램프 ×1: 3/3 도착. 고속도로 추종 fd 평균 0.099m.</li>
+<li>전맵 배치 8/8 도착: Town03 로터리(순간 과도 7.7 복구), Town05 ×2, <strong>Town02(첫 시도 맵) ×2 — 무수정 fd 평균 0.14~0.17m</strong>, Town10 기준 3경로(91→16 fd max 0.65 최고 기록).</li>
+<li>남은 과도 이슈(복구됨, 문서화): 로터리 투영 순간 과도, 다차선 점프 참조 스냅(fd 5).</li>
 </ul>
 
 
