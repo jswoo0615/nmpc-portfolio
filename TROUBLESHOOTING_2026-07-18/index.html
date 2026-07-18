@@ -4538,7 +4538,7 @@
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        최종 성과 요약
+        최종 성과 요약 (하루 전체)
       
     </span>
   </a>
@@ -5011,6 +5011,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#5-jetson-nano-hil" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        부록 5: Jetson Nano HIL 배포 (같은 날 후속)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5031,7 +5042,7 @@
 <h1 id="2026-07-18">2026-07-18 세션 트러블슈팅 전체 기록</h1>
 <p>CARLA 0.9.15 + NMPC 자율주행 스택의 하루 디버깅 세션에서 발견·수정한 모든 문제의 기록.
 증상 → 근본 원인 → 수정 → 검증 순으로 정리. <strong>모든 수정은 맵 비종속</strong> (Q 가중치 등 튜닝값의 맵별 변경 금지 제약 준수).</p>
-<h2 id="_1">최종 성과 요약</h2>
+<h2 id="_1">최종 성과 요약 (하루 전체)</h2>
 <table>
 <thead>
 <tr>
@@ -5044,12 +5055,12 @@
 <tr>
 <td>기준 경로(spawn91→16) 최대 횡오차</td>
 <td>2.93 m</td>
-<td><strong>0.82 m</strong> (−72%)</td>
+<td><strong>0.65 m</strong> (−78%, MF52 반영 후)</td>
 </tr>
 <tr>
 <td>평균 횡오차 (frenet_d)</td>
 <td>—</td>
-<td>0.160 m</td>
+<td>0.152 m</td>
 </tr>
 <tr>
 <td>코너 통과 속도</td>
@@ -5059,12 +5070,27 @@
 <tr>
 <td>평균 속도</td>
 <td>27 km/h</td>
-<td>36 km/h</td>
+<td>36~37 km/h</td>
 </tr>
 <tr>
 <td>멀티맵</td>
 <td>—</td>
-<td>Town10HD/Town03/Town05 무수정 완주</td>
+<td>Town10HD/Town02/Town03/Town04/Town05 무수정 완주</td>
+</tr>
+<tr>
+<td>타이어 모델</td>
+<td>강성 2배 오차(선형 c1, 미사용 코드 경로)</td>
+<td>MF52 동정 + 임의 .tir 자동 캘리브레이션</td>
+</tr>
+<tr>
+<td>실행 형태</td>
+<td>Python 파이프라인 (x86 100Hz)</td>
+<td>+ ROS2 노드 (x86 20Hz) + <strong>Jetson Nano HIL 20Hz</strong></td>
+</tr>
+<tr>
+<td>Jetson Nano HIL</td>
+<td>—</td>
+<td><strong>완주, cte 1.04/0.30 — 데스크탑 동급</strong></td>
 </tr>
 </tbody>
 </table>
@@ -5267,6 +5293,208 @@
 <li><strong>CARLA 직접 검증</strong> (최소 브리지 <code>nmpc_ros2/scripts/carla_bridge_min.py</code> + RViz 설정 <code>rviz/nmpc_view.rviz</code>): 기준 경로 91→16을 <strong>20Hz 제어·정적 가중치</strong>로 완주 — 평균 36.9km/h, cte 최대 0.87/평균 0.29m (100Hz Python 파이프라인과 동급). 적응 가중치 없이 코어만으로 이 품질 = 이식 온전성 실증.</li>
 <li>Jetson 빌드: <code>colcon build --cmake-args -DBUILD_FOR_JETSON_NANO=ON</code> (cortex-a57 최적화, autoware 노드 자동 제외), 타이어는 <code>-p vehicle.tire_file:=&lt;repo&gt;/carla_tesla.tir</code>.</li>
 </ul>
+<h2 id="5-jetson-nano-hil">부록 5: Jetson Nano HIL 배포 (같은 날 후속)</h2>
+<p>최종 결과: <strong>Jetson Nano(WiFi)가 CARLA 차량을 데스크탑과 동급으로 제어</strong> — 91→16 완주, 36.8km/h, cte max 1.04/avg 0.30 (데스크탑 0.87~1.15/0.29~0.34).</p>
+<p>문제 사슬과 해결:
+1. <strong>실시간성</strong>: H=500 IPM이 Nano에서 ~450ms/솔브(2.2Hz) → <code>NMPC_HORIZON</code> 컴파일 노브 신설, Jetson은 H=50 — 20Hz(50ms) 실시간 실측 확인.
+2. <strong>dt=0.1 함정</strong>: H=50+dt=0.1(5초 예측) 시도는 폭주 — 저속에서 타이어 동역학이 강성(λ≈C/(m·vx))이라 RK4가 dt=0.1을 못 견딤. <strong>dt=0.05+H=50(2.5초 예측)이 Nano 정답 구성</strong> (데스크탑 x86 A/B로 H=50 무죄 입증).
+3. <strong>DDS 비대칭 블랙홀 (핵심)</strong>: 디스커버리/역방향은 정상인데 데스크탑→Jetson 유저데이터 수신 0Hz. 원인 = Jetson 참가자가 wlan0 외 <strong>docker0(172.17.0.1) 등 도달 불가 로케이터까지 광고</strong> → 데이터가 죽은 주소로 발송. <strong>Fast-DDS interfaceWhiteList</strong>(호스트 LAN IP+루프백)로 즉시 해소: 수신 0→20Hz/지터 σ0.9ms. run_jetson_docker.sh가 현재 IP로 XML 자동 생성.
+4. 부차 확인: WiFi power_save on(끔 권장), wlan0 중복 IP(.100/.105 — 제거), Jetson 유휴 RTT 1.6ms로 링크 자체는 양호.
+5. <strong>프로세스 위생 사고 (재발 방지 필수)</strong>: 진단용 스모크/프로브 퍼블리셔 좀비가 사용자 브리지와 동시에 가짜 odometry/경로를 발행해 HIL 실패 2회를 유발·오진단하게 함. 원칙: (a) 테스트 퍼블리셔는 자기 종료 시한 필수, (b) pkill 패턴은 파일명 리네임에 취약 — PID 기록 후 직접 kill, (c) 주행 전 <code>ros2 topic info</code>로 <strong>퍼블리셔 수 검증</strong> (odometry=브리지 1개만).</p>
+<p>Jetson 런북: <code>sudo ./run_jetson_docker.sh</code> (셸, 자동 빌드+화이트리스트) → <code>ros2 run nmpc_ros2 nmpc_jetson_node --ros-args -p vehicle.tire_file:=/ws/src/NMPC/carla_tesla.tir -p solver.target_speed_mps:=13.0</code> (dt는 기본 0.05 유지).</p>
+<hr />
+<h1 id="2026-07-18_1">2026-07-18 마무리 종합</h1>
+<h2 id="1">1. 하루의 궤적 (문제 → 해결 연대기)</h2>
+<ol>
+<li><strong>아침</strong>: NMPC가 직진도 못 하는 상태(상시 제동)에서 시작 — 빌드/배포(A), IPM 발산(B2), EKF mu 붕괴(B4), kappa 부호(B5)를 차례로 해결해 기본 주행 확보.</li>
+<li><strong>오전~낮</strong>: 코너 2.93m 이탈의 원인 사슬 규명 — 차량 동정(C)으로 모델 정합, 동심원 호 가짜 평형(D1)의 기전 규명과 <code>reset_warm_start()</code> 해결, 역효과 가중치 로직 제거(D2), 코너 속도 인간화(E).</li>
+<li><strong>오후</strong>: 일반화 — 차선변경/로터리/자기교차 경로의 참조 전처리 문제(F1~F5)와 안전장치 상호작용 사고(G1~G3)를 해소하며 5개 맵 무수정 완주 달성. 추종 조임(H)으로 0.82m.</li>
+<li><strong>저녁</strong>: MF52 타이어 업그레이드(부록 2) — 기존 c1이 미사용 경로였음을 발견, 비선형 동정으로 LUT 교정(0.65m 달성). 임의 표준 .tir 지원(LKY/LMUY 자동 캘리브레이션, 부록 3). 조향 지그재그 부분 해결(회랑 연속화 — 잔여분은 대회 전 필수 과제).</li>
+<li><strong>밤</strong>: ROS2 노드화(부록 4) — ControlCore 공유 코어로 전체 파이프라인 이식, CARLA 직접 검증. <strong>Jetson Nano HIL 배포(부록 5)</strong> — 실시간성(H=50)·dt 함정·DDS 블랙홀을 뚫고 데스크탑 동급 제어 달성.</li>
+</ol>
+<h2 id="2-jetsonnano">2. 오늘의 커밋 (JetsonNano 브랜치 기준)</h2>
+<table>
+<thead>
+<tr>
+<th>커밋</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bb3cf47</td>
+<td>코너 동결·차선변경·멀티맵 안정화 — 차량 동정 반영, 추종 오차 72% 개선 (11파일, +894/−93)</td>
+</tr>
+<tr>
+<td>3d83577</td>
+<td>JetsonNano 병합 감사 (StaticMatrix row-major 함정 기록)</td>
+</tr>
+<tr>
+<td>8f8f7dc</td>
+<td>MF52 타이어 업그레이드 + 임의 .tir 자동 캘리브레이션 + 지그재그 완화</td>
+</tr>
+<tr>
+<td>7a1e017</td>
+<td>PR #152: dev1 → JetsonNano 병합 (사용자)</td>
+</tr>
+<tr>
+<td>536819c</td>
+<td>ROS2 노드화 (ControlCore + 3노드 + CARLA 직접 검증)</td>
+</tr>
+<tr>
+<td>89eb7b2</td>
+<td>RViz 모니터링용 CARLA 3인칭 RGB 카메라</td>
+</tr>
+<tr>
+<td>9661681</td>
+<td>docker 스크립트 수정 (사용자)</td>
+</tr>
+<tr>
+<td>5200a02</td>
+<td>NMPC_HORIZON 컴파일 노브 (Nano H=50)</td>
+</tr>
+<tr>
+<td>f482e06</td>
+<td>Nano HIL 완성 — DDS 화이트리스트 자동화, H=50/dt=0.05 확정</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3">3. 최종 시스템 구성 레퍼런스</h2>
+<h3 id="carla-tesla-model-3">차량 상수 (동정값 — 맵/환경 비종속, CARLA Tesla Model 3)</h3>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>값</th>
+<th>출처</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>질량 m</td>
+<td>1845.0 kg</td>
+<td>physics_control</td>
+</tr>
+<tr>
+<td>lf / lr</td>
+<td>1.168 / 1.836 m</td>
+<td>휠 위치 + CoM</td>
+</tr>
+<tr>
+<td>I_z</td>
+<td>3958 kg·m²</td>
+<td>m·lf·lr 근사</td>
+</tr>
+<tr>
+<td>타이어 정규화 강성 k0</td>
+<td>8.477 /rad</td>
+<td>정상선회+동적 과도 교차 검증</td>
+</tr>
+<tr>
+<td>타이어 피크 마찰</td>
+<td>3.5</td>
+<td>PhysX tire_friction (사실상 선형 타이어)</td>
+</tr>
+<tr>
+<td>조향 cmd→휠 스케일</td>
+<td>1.15 (저각)</td>
+<td>Phase B 맵핑</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_5">실행 구성별 파라미터</h3>
+<table>
+<thead>
+<tr>
+<th>구성</th>
+<th>H</th>
+<th>dt</th>
+<th>주기</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python 파이프라인 (x86)</td>
+<td>500</td>
+<td>0.01</td>
+<td>100Hz</td>
+<td>reference_generator 적응 가중치 포함</td>
+</tr>
+<tr>
+<td>ROS2 노드 (x86)</td>
+<td>500</td>
+<td>0.05</td>
+<td>20Hz</td>
+<td>ControlCore 정적 가중치</td>
+</tr>
+<tr>
+<td>ROS2 노드 (Jetson Nano)</td>
+<td><strong>50</strong></td>
+<td><strong>0.05</strong></td>
+<td>20Hz</td>
+<td>dt=0.1 금지(RK4 발산), DDS 화이트리스트 필수</td>
+</tr>
+</tbody>
+</table>
+<h3 id="controlcorewrapper">핵심 안전장치 (ControlCore/wrapper 공통 설계)</h3>
+<ul>
+<li>웜리셋: |d|&gt;0.7m 시 U_guess/듀얼만 리셋(투영·u_last 유지), 쿨다운 0.5s</li>
+<li>적응 회랑: 확장 즉시, 수축 1cm/솔브 연속 감쇠 (배리어 토글 = 지그재그 방지)</li>
+<li>straight_gain 하한 0.25, 참조 dedupe + 후방 외삽 도메인 커버</li>
+<li>원칙: <strong>주행 중 참조를 차 위치로 접착 금지</strong> (이탈 가림 사고 2회의 교훈)</li>
+</ul>
+<h2 id="4">4. 검증 매트릭스 (최종 상태 기준)</h2>
+<table>
+<thead>
+<tr>
+<th>시나리오</th>
+<th>구성</th>
+<th>결과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Town10HD 91→16 (기준)</td>
+<td>Python 100Hz</td>
+<td>0.65 / 0.152 m, 36.9km/h</td>
+</tr>
+<tr>
+<td>Town10HD 91→16</td>
+<td>ROS2 x86 20Hz</td>
+<td>0.87~1.15 / 0.29~0.34 m</td>
+</tr>
+<tr>
+<td>Town10HD 91→16</td>
+<td><strong>Jetson Nano HIL</strong></td>
+<td><strong>1.04 / 0.30 m, 36.8km/h</strong></td>
+</tr>
+<tr>
+<td>차선변경(25→91)·장거리(105→84)</td>
+<td>Python</td>
+<td>완주, 평균 0.22~0.54 m</td>
+</tr>
+<tr>
+<td>Town02/03/04/05 (로터리·고속도로 램프 포함)</td>
+<td>Python</td>
+<td>무수정 완주</td>
+</tr>
+<tr>
+<td>임의 .tir (representative, ISO 부호)</td>
+<td>Python</td>
+<td>자동 캘리브레이션으로 동급 성능</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5">5. 남은 과제 (우선순위 순)</h2>
+<ol>
+<li><strong>[대회 전 필수] 저속 조향 지그재그 완결</strong> — 후보: Suboptimal 해 분산, 게인 전환 과도, EMA 통과 대역 (memory: zigzag-must-fix)</li>
+<li>ROS2 코어에 코너 자동 감속 이식 (현재 고정 목표 속도 — reference_generator의 곡률 기반 감속 로직)</li>
+<li>runner 경로 생성 검증 (GRP 시작점 스냅 병적 케이스)</li>
+<li>Autoware 스택 연동 검증 (autoware_auto_msgs 환경)</li>
+<li>EKF vy 가관측성 (연구 과제), Town03 로터리 순간 과도 분석</li>
+</ol>
+<p><strong>2026-07-18 세션 종료.</strong> 직진도 못 하던 시스템이 하루 만에 5개 맵 무수정 완주 + Jetson Nano 실기 HIL까지 도달했다.</p>
 
 
 
