@@ -4928,6 +4928,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#jetsonnano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        부록: JetsonNano 병합 감사 (같은 날 후속)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5140,6 +5151,12 @@
 <li>EKF vy 가관측성 (연구 과제).</li>
 <li>차선변경 구간 추종 품질(25→91 평균 0.54m) 다듬기.</li>
 </ol>
+<h2 id="jetsonnano">부록: JetsonNano 병합 감사 (같은 날 후속)</h2>
+<ul>
+<li>JetsonNano 브랜치(CUDA/Jetson 배포 인프라)를 dev1에 병합 — 충돌 0, x86 빌드/주행 수치 동등성 실증 (91→16 fd 0.93/0.146).</li>
+<li>수학 라이브러리 diff는 CUDA_CALLABLE 주석 + 호스트/디바이스 분기(호스트 경로 std:: 동일)로 무해.</li>
+<li><strong>잠재 함정</strong>: <code>StaticMatrix</code> initializer_list 생성자의 해석이 저장소 순서(column-major)에서 <strong>row-major 재해석</strong>으로 변경됨. 현재 2D 행렬 브레이스 초기화 사용처는 없지만, 향후 2D 행렬을 중괄호로 초기화할 때 구버전 습관(열 우선 나열)으로 쓰면 조용히 전치됨. 벡터(StaticVector)는 순서 불변.</li>
+</ul>
 
 
 
