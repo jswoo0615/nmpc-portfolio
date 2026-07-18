@@ -5000,6 +5000,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#4-ros2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        부록 4: ROS2 노드화 (같은 날 후속)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5248,6 +5259,13 @@
 <li>Town04 진입 램프 ×2, 출구 램프 ×1: 3/3 도착. 고속도로 추종 fd 평균 0.099m.</li>
 <li>전맵 배치 8/8 도착: Town03 로터리(순간 과도 7.7 복구), Town05 ×2, <strong>Town02(첫 시도 맵) ×2 — 무수정 fd 평균 0.14~0.17m</strong>, Town10 기준 3경로(91→16 fd max 0.65 최고 기록).</li>
 <li>남은 과도 이슈(복구됨, 문서화): 로터리 투영 순간 과도, 다차선 점프 참조 스냅(fd 5).</li>
+</ul>
+<h2 id="4-ros2">부록 4: ROS2 노드화 (같은 날 후속)</h2>
+<ul>
+<li><strong>ControlCore 공유 헤더</strong> (<code>nmpc_ros2/include/nmpc_ros2/control_core.hpp</code>): 검증된 전체 파이프라인(동정 기하, MF52 .tir 자동 캘리브레이션 LKY/LMUY, 참조 dedupe+후방 외삽, 증분 투영, straight_gain 0.25, 웜리셋 쿨다운, 회랑 연속 감쇠)을 노드 독립 C++ 클래스로 이식. 세 노드(jetson/autoware/carla)가 공유.</li>
+<li><strong>노드 재작성</strong>: jetson(범용 CARLA ros-bridge 토픽, ROS 파라미터화 + 디버그 토픽), autoware(궤적 속도 프로파일 연동). CMake는 autoware 메시지 유무 자동 감지 조건부 빌드(기존엔 Jetson 플래그와 잘못 결합).</li>
+<li><strong>CARLA 직접 검증</strong> (최소 브리지 <code>nmpc_ros2/scripts/carla_bridge_min.py</code> + RViz 설정 <code>rviz/nmpc_view.rviz</code>): 기준 경로 91→16을 <strong>20Hz 제어·정적 가중치</strong>로 완주 — 평균 36.9km/h, cte 최대 0.87/평균 0.29m (100Hz Python 파이프라인과 동급). 적응 가중치 없이 코어만으로 이 품질 = 이식 온전성 실증.</li>
+<li>Jetson 빌드: <code>colcon build --cmake-args -DBUILD_FOR_JETSON_NANO=ON</code> (cortex-a57 최적화, autoware 노드 자동 제외), 타이어는 <code>-p vehicle.tire_file:=&lt;repo&gt;/carla_tesla.tir</code>.</li>
 </ul>
 
 
